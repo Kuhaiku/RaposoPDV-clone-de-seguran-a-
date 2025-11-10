@@ -52,6 +52,7 @@ exports.criar = async (req, res) => {
             
             // --- LÓGICA DE PASTA DATADA (PERÍODO) ---
             const subfolderData = getHojeFormatado();
+            // Caminho corrigido: slug / data / produtos
             const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos`;
             console.log(`[CRIAR] Uploading para pasta: ${folderPath}`);
 
@@ -267,7 +268,6 @@ exports.excluir = async (req, res) => {
                     const newPublicId = `${pastaDestino}/${basePublicId}`;
                     
                     console.log(`[INATIVAR] MOVENDO ${foto.public_id} para ${newPublicId}`);
-                    // O 'rename' move o arquivo
                     const result = await cloudinary.uploader.rename(foto.public_id, newPublicId);
                     
                     // 4. Atualizar DB com nova URL e public_id
@@ -437,8 +437,6 @@ exports.excluirEmMassa = async (req, res) => {
         await connection.query(`DELETE FROM produto_fotos WHERE produto_id IN (?)`, [numericIds]);
 
         // 4. MARCA OS PRODUTOS COMO 'excluido' no DB
-        // A VERIFICAÇÃO DE VENDAS FOI REMOVIDA, CONFORME SEU PEDIDO DE "marcar como excluido"
-        // Ocultar da UI é responsabilidade do frontend (que agora filtra por status='ativo')
         console.log("[EXCLUIR PERM] Marcando produtos como 'excluido' no DB...");
         const [result] = await connection.query(
             `UPDATE produtos SET status = 'excluido' WHERE id IN (?) AND empresa_id = ?`, 
@@ -451,6 +449,12 @@ exports.excluirEmMassa = async (req, res) => {
             excluidos: result.affectedRows
         });
     } catch (error) {
+        // Se um produto com vendas for excluído, o DB vai reclamar por causa da FOREIGN KEY
+        // na tabela 'venda_itens'.
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+             await connection.rollback();
+             return res.status(400).json({ message: 'Erro: Um ou mais produtos estão associados a vendas existentes e não podem ser excluídos.' });
+        }
         if (connection) await connection.rollback();
         console.error(`Error during batch exclusion for Empresa ID ${empresa_id}:`, error);
         res.status(500).json({ message: error.message || 'Erro ao excluir produtos.' });
