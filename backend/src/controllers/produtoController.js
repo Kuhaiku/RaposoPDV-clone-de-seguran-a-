@@ -5,24 +5,25 @@ const csv = require('csv-parser');
 const { Readable } = require('stream');
 
 /**
- * Helper para formatar a data no formato DD-MM-YY
+ * Helper para formatar a data (vinda do DB) no formato DD-MM-YY
  * (Esta é a função que cria as pastas de período, ex: 10-11-25)
+ * * @param {Date | string} dateInput A data vinda do banco (ex: data_inicio_periodo_atual)
  */
-function getHojeFormatado() {
-  const today = new Date();
-  const dia = String(today.getDate()).padStart(2, '0');
-  const mes = String(today.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexed
-  const ano = String(today.getFullYear()).slice(-2);
+function formatarDataParaPasta(dateInput) {
+  const date = new Date(dateInput); // Converte a string/timestamp do DB para um objeto Date
+  const dia = String(date.getDate()).padStart(2, '0');
+  const mes = String(date.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexed
+  const ano = String(date.getFullYear()).slice(-2);
   return `${dia}-${mes}-${ano}`; // Formato DD-MM-YY
 }
 
 // -----------------------------------------------------------------------------
-// AÇÃO 1: CRIAR PRODUTO (Upload para pasta de período E ID do produto)
+// AÇÃO 1: CRIAR PRODUTO (Upload para pasta de período DO USUÁRIO)
 // -----------------------------------------------------------------------------
 exports.criar = async (req, res) => {
     console.log('--- CHAMANDO: exports.criar ---');
     const empresa_id = req.empresaId;
-    // Usa a nova coluna 'status'
+    const usuario_id = req.usuarioId; // Captura o ID do usuário logado
     const { nome, descricao, preco, estoque, categoria, codigo } = req.body;
     const codigoFinal = codigo || '0';
     const files = req.files || [];
@@ -36,23 +37,30 @@ exports.criar = async (req, res) => {
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // INSERE com status 'ativo'
+        // 1. BUSCAR O PERÍODO ATUAL DO USUÁRIO
+        const [usuarioRows] = await connection.query('SELECT data_inicio_periodo_atual FROM usuarios WHERE id = ?', [usuario_id]);
+        if (usuarioRows.length === 0 || !usuarioRows[0].data_inicio_periodo_atual) {
+            throw new Error('Não foi possível encontrar o período de vendas atual do usuário.');
+        }
+        const dataPeriodoUsuario = usuarioRows[0].data_inicio_periodo_atual;
+
+        // 2. INSERE o produto
         const [dbResult] = await connection.query(
             'INSERT INTO produtos (empresa_id, nome, descricao, preco, estoque, categoria, codigo, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [empresa_id, nome, descricao, preco, estoque, categoria, codigoFinal, 'ativo']
         );
         const produtoId = dbResult.insertId;
 
-        // Lógica de upload de imagem
+        // 3. Lógica de upload de imagem
         if (files.length > 0) {
             const [empresaRows] = await connection.query('SELECT slug FROM empresas WHERE id = ?', [empresa_id]);
             if (empresaRows.length === 0 || !empresaRows[0].slug) {
                 throw new Error('Diretório da empresa não encontrado.');
             }
             
-            // --- LÓGICA DE PASTA DATADA (PERÍODO) ---
-            const subfolderData = getHojeFormatado();
-            // Caminho corrigido: slug / data / produtos / ID_DO_PRODUTO
+            // --- LÓGICA DE PASTA CORRIGIDA ---
+            // Usa a data do período do usuário, não a data de hoje
+            const subfolderData = formatarDataParaPasta(dataPeriodoUsuario);
             const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos/${produtoId}`;
             console.log(`[CRIAR] Uploading para pasta: ${folderPath}`);
 
@@ -88,8 +96,9 @@ exports.criar = async (req, res) => {
     }
 };
 
-// Listar todos os produtos ATIVOS da empresa logada
+// Listar todos os produtos ATIVOS (Lógica não mexe com pastas, continua igual)
 exports.listarTodos = async (req, res) => {
+    // ... (código inalterado) ...
     const empresa_id = req.empresaId;
     const { sortBy = 'nome-asc' } = req.query;
 
@@ -118,8 +127,9 @@ exports.listarTodos = async (req, res) => {
     }
 };
 
-// Obter um produto específico por ID
+// Obter um produto específico por ID (Lógica não mexe com pastas, continua igual)
 exports.obterPorId = async (req, res) => {
+    // ... (código inalterado) ...
     const { id } = req.params;
     const empresa_id = req.empresaId;
     try {
@@ -146,6 +156,7 @@ exports.atualizar = async (req, res) => {
     console.log('--- CHAMANDO: exports.atualizar ---');
     const { id } = req.params; // ID do produto
     const empresa_id = req.empresaId;
+    const usuario_id = req.usuarioId; // Captura o ID do usuário logado
     const { nome, descricao, preco, estoque, categoria, codigo, fotosParaRemover } = req.body;
     const codigoFinal = codigo || '0';
     const files = req.files || [];
@@ -159,8 +170,16 @@ exports.atualizar = async (req, res) => {
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // 1. Lógica para REMOVER fotos (Exclusão permanente do Cloudinary)
+        // 1. BUSCAR O PERÍODO ATUAL DO USUÁRIO
+        const [usuarioRows] = await connection.query('SELECT data_inicio_periodo_atual FROM usuarios WHERE id = ?', [usuario_id]);
+        if (usuarioRows.length === 0 || !usuarioRows[0].data_inicio_periodo_atual) {
+            throw new Error('Não foi possível encontrar o período de vendas atual do usuário.');
+        }
+        const dataPeriodoUsuario = usuarioRows[0].data_inicio_periodo_atual;
+
+        // 2. Lógica para REMOVER fotos (Exclusão permanente do Cloudinary)
         if (fotosParaRemover) {
+             // ... (código de remoção inalterado) ...
              let fotosARemoverArray = [];
              try { fotosARemoverArray = JSON.parse(fotosParaRemover); } 
              catch (parseError) { console.error("Erro ao parsear 'fotosParaRemover':", parseError); }
@@ -178,7 +197,7 @@ exports.atualizar = async (req, res) => {
             }
         }
 
-        // 2. Lógica para ADICIONAR novas fotos (para pasta de período E ID do produto)
+        // 3. Lógica para ADICIONAR novas fotos (para pasta de período DO USUÁRIO)
         if (files.length > 0) {
             console.log(`[ATUALIZAR] Uploading ${files.length} new images...`);
             const [empresaRows] = await connection.query('SELECT slug FROM empresas WHERE id = ?', [empresa_id]);
@@ -186,9 +205,8 @@ exports.atualizar = async (req, res) => {
                 throw new Error('Diretório da empresa não encontrado para upload.');
             }
             
-            // --- LÓGICA DE PASTA DATADA (PERÍODO) ---
-            const subfolderData = getHojeFormatado();
-            // Caminho corrigido: slug / data / produtos / ID_DO_PRODUTO
+            // --- LÓGICA DE PASTA CORRIGIDA ---
+            const subfolderData = formatarDataParaPasta(dataPeriodoUsuario);
             const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos/${id}`;
             console.log(`[ATUALIZAR] Uploading para pasta: ${folderPath}`);
 
@@ -208,7 +226,7 @@ exports.atualizar = async (req, res) => {
             }
         }
 
-        // 3. Atualiza os outros dados do produto (NÃO mexe no status aqui)
+        // 4. Atualiza os outros dados do produto (NÃO mexe no status aqui)
         console.log(`[ATUALIZAR] Atualizando dados do produto ID ${id}...`);
         const [updateResult] = await connection.query(
             'UPDATE produtos SET nome = ?, descricao = ?, preco = ?, estoque = ?, categoria = ?, codigo = ? WHERE id = ? AND empresa_id = ?',
@@ -232,12 +250,13 @@ exports.atualizar = async (req, res) => {
 };
 
 // -----------------------------------------------------------------------------
-// AÇÃO 2: INATIVAR PRODUTO (Mover para pasta "inativos/{id}" DENTRO DO PERÍODO)
+// AÇÃO 2: INATIVAR PRODUTO (Mover para pasta "inativos/{id}" DENTRO DO PERÍODO DO USUÁRIO)
 // -----------------------------------------------------------------------------
 exports.excluir = async (req, res) => {
     console.log('--- CHAMANDO: exports.excluir (INATIVAR) ---');
     const { id } = req.params;
     const empresa_id = req.empresaId;
+    const usuario_id = req.usuarioId; // Captura o ID do usuário logado
     let connection;
 
     try {
@@ -251,42 +270,40 @@ exports.excluir = async (req, res) => {
         }
         const slug = empresaRows[0].slug;
         
+        // 2. BUSCAR O PERÍODO ATUAL DO USUÁRIO
+        const [usuarioRows] = await connection.query('SELECT data_inicio_periodo_atual FROM usuarios WHERE id = ?', [usuario_id]);
+        if (usuarioRows.length === 0 || !usuarioRows[0].data_inicio_periodo_atual) {
+            throw new Error('Não foi possível encontrar o período de vendas atual do usuário.');
+        }
+        const dataPeriodoUsuario = usuarioRows[0].data_inicio_periodo_atual;
+        
         // ***** MODIFICAÇÃO CHAVE 1 *****
-        const subfolderData = getHojeFormatado(); // Pega o período atual (data)
-        // O destino base agora inclui o ID do produto
+        // Usa a data do período do usuário
+        const subfolderData = formatarDataParaPasta(dataPeriodoUsuario);
         const pastaDestino = `raposopdv/${slug}/${subfolderData}/inativos/${id}`;
         // ***** FIM DA MODIFICAÇÃO *****
 
-        // 2. Buscar fotos do produto
+        // 3. Buscar fotos do produto
         const [fotos] = await connection.query('SELECT id, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
         console.log(`[INATIVAR] Encontradas ${fotos.length} fotos para o produto ${id}.`);
 
-        // 3. Mover fotos no Cloudinary
+        // 4. Mover fotos no Cloudinary
         for (const foto of fotos) {
-            // Só move se não estiver já em uma pasta 'inativos'
             if (foto.public_id && !foto.public_id.includes('/inativos/')) { 
                 try {
-                    // Pega SÓ o nome do arquivo (ex: abc.jpg)
                     const basePublicId = foto.public_id.split('/').pop();
-                    // O novo ID será a pasta destino + nome do arquivo
                     const newPublicId = `${pastaDestino}/${basePublicId}`;
                     
                     console.log(`[INATIVAR] MOVENDO ${foto.public_id} para ${newPublicId}`);
-                    // Renomeia (move) o arquivo
                     const result = await cloudinary.uploader.rename(foto.public_id, newPublicId);
                     
-                    // 4. Atualizar DB com nova URL e public_id
                     await connection.query(
                         'UPDATE produto_fotos SET url = ?, public_id = ? WHERE id = ?',
                         [result.secure_url, result.public_id, foto.id]
                     );
                 } catch (renameError) {
-                    // ***** ESTA É A CORREÇÃO CRÍTICA *****
-                    // Se der erro ao mover a foto, joga o erro para fora do loop
-                    // Isso vai parar a execução e acionar o rollback da transação
                     console.error(`[INATIVAR] Erro ao mover foto ${foto.public_id}: ${renameError.message}`);
-                    throw renameError; // <-- Joga o erro para o catch principal
-                    // ***** FIM DA CORREÇÃO *****
+                    throw renameError;
                 }
             } else {
                 console.log(`[INATIVAR] Ignorando foto ${foto.public_id} (já está em 'inativos' ou não tem public_id).`);
@@ -312,8 +329,9 @@ exports.excluir = async (req, res) => {
 };
 
 
-// Listar produtos INATIVOS (para a tela de Inativos)
+// Listar produtos INATIVOS (Lógica não mexe com pastas, continua igual)
 exports.listarInativos = async (req, res) => {
+    // ... (código inalterado) ...
     const empresa_id = req.empresaId;
     try {
         // Busca onde status = 'inativo' E TAMBÉM 'excluido'
@@ -333,12 +351,13 @@ exports.listarInativos = async (req, res) => {
 };
 
 // -----------------------------------------------------------------------------
-// AÇÃO 3: REATIVAR PRODUTO (Mover de "inativos/{id}" para pasta de período E ID do produto)
+// AÇÃO 3: REATIVAR PRODUTO (Mover de "inativos/{id}" para pasta de período DO USUÁRIO)
 // -----------------------------------------------------------------------------
 exports.reativar = async (req, res) => {
     console.log('--- CHAMANDO: exports.reativar ---');
     const { id } = req.params; // ID do produto
     const empresa_id = req.empresaId;
+    const usuario_id = req.usuarioId; // Captura o ID do usuário logado
     let connection;
 
     try {
@@ -352,17 +371,23 @@ exports.reativar = async (req, res) => {
         }
         const slug = empresaRows[0].slug;
         
-        // Define a pasta de destino com a data ATUAL (período de reativação) E ID
-        const subfolderData = getHojeFormatado();
+        // 2. BUSCAR O PERÍODO ATUAL DO USUÁRIO
+        const [usuarioRows] = await connection.query('SELECT data_inicio_periodo_atual FROM usuarios WHERE id = ?', [usuario_id]);
+        if (usuarioRows.length === 0 || !usuarioRows[0].data_inicio_periodo_atual) {
+            throw new Error('Não foi possível encontrar o período de vendas atual do usuário.');
+        }
+        const dataPeriodoUsuario = usuarioRows[0].data_inicio_periodo_atual;
+
+        // 3. Define a pasta de destino com a data DO PERÍODO ATUAL (período de reativação) E ID
+        const subfolderData = formatarDataParaPasta(dataPeriodoUsuario);
         const pastaDestino = `raposopdv/${slug}/${subfolderData}/produtos/${id}`;
 
-        // 2. Buscar fotos do produto (que estão na pasta 'inativos')
+        // 4. Buscar fotos do produto (que estão na pasta 'inativos')
         const [fotos] = await connection.query('SELECT id, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
         console.log(`[REATIVAR] Encontradas ${fotos.length} fotos para o produto ${id}.`);
 
-        // 3. Mover fotos no Cloudinary
+        // 5. Mover fotos no Cloudinary
         for (const foto of fotos) {
-            // Só move se AINDA estiver na pasta 'inativos'
             if (foto.public_id && foto.public_id.includes('/inativos/')) {
                 try {
                     const basePublicId = foto.public_id.split('/').pop();
@@ -371,7 +396,6 @@ exports.reativar = async (req, res) => {
                     console.log(`[REATIVAR] MOVENDO ${foto.public_id} para ${newPublicId}`);
                     const result = await cloudinary.uploader.rename(foto.public_id, newPublicId);
                     
-                    // 4. Atualizar DB com nova URL e public_id
                     await connection.query(
                         'UPDATE produto_fotos SET url = ?, public_id = ? WHERE id = ?',
                         [result.secure_url, result.public_id, foto.id]
@@ -384,7 +408,7 @@ exports.reativar = async (req, res) => {
             }
         }
 
-        // 5. Reativar o produto no DB (seta status = 'ativo')
+        // 6. Reativar o produto no DB (seta status = 'ativo')
         console.log(`[REATIVAR] Marcando produto ${id} como 'ativo' no banco de dados.`);
         const [result] = await connection.query("UPDATE produtos SET status = 'ativo' WHERE id = ? AND empresa_id = ?", [id, empresa_id]);
         if (result.affectedRows === 0) {
@@ -404,9 +428,10 @@ exports.reativar = async (req, res) => {
 
 
 // -----------------------------------------------------------------------------
-// AÇÃO 4: EXCLUIR PERMANENTEMENTE (Marcar como "excluido" e Deletar fotos)
+// AÇÃO 4: EXCLUIR PERMANENTEMENTE (Lógica não mexe com pastas, continua igual)
 // -----------------------------------------------------------------------------
 exports.excluirEmMassa = async (req, res) => {
+    // ... (código inalterado) ...
     console.log('--- CHAMANDO: exports.excluirEmMassa (MARCAR COMO EXCLUÍDO E DELETAR FOTOS) ---');
     const empresa_id = req.empresaId;
     const { ids } = req.body; // Recebe um array de IDs
@@ -474,11 +499,12 @@ exports.excluirEmMassa = async (req, res) => {
 };
 
 // -----------------------------------------------------------------------------
-// FUNÇÕES AUXILIARES (Inativar em Massa, CSV)
+// FUNÇÕES AUXILIARES (Inativar em Massa, CSV) - (Lógica não mexe com pastas, continua igual)
 // -----------------------------------------------------------------------------
 
 // Inativar produtos em massa (Apenas marca, não move fotos)
 exports.inativarEmMassa = async (req, res) => {
+    // ... (código inalterado) ...
     console.log('--- CHAMANDO: exports.inativarEmMassa (Apenas DB) ---');
     const empresa_id = req.empresaId;
     const { ids } = req.body;
@@ -512,6 +538,7 @@ exports.inativarEmMassa = async (req, res) => {
 
 // Importar produtos via CSV
 exports.importarCSV = async (req, res) => {
+    // ... (código inalterado) ...
     console.log('--- CHAMANDO: exports.importarCSV ---');
     const empresa_id = req.empresaId;
 
