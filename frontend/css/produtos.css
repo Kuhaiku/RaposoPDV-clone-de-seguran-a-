@@ -1,0 +1,179 @@
+/* Estilos para o formulário em grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Cria 2 colunas */
+    gap: 20px;
+}
+
+/* Faz esses campos ocuparem as duas colunas */
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Tabela de Produtos */
+.col-img { width: 80px; }
+.col-actions { width: 150px; }
+
+.produto-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
+
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    resize: vertical;
+}
+
+/* ===== ESTILOS PARA O BOTÃO DE ORDENAÇÃO ===== */
+.ordenacao-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-ordenacao {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.btn-ordenacao:hover {
+    background-color: #e9ecef;
+}
+
+.btn-ordenacao svg {
+    width: 20px;
+    height: 20px;
+    fill: #555;
+}
+
+#texto-ordenacao {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+/* Estilo para o checkbox de seleção */
+.table-container th:first-child, .table-container td:first-child {
+    width: 40px;
+    text-align: center;
+}
+
+/* ===== ESTILOS PARA O GERENCIADOR DE FOTOS ===== */
+.gerenciador-fotos {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    width: 100%;
+    min-height: 120px;
+}
+
+.previews-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.foto-preview {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.foto-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.btn-remover-foto {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 22px;
+    height: 22px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    font-size: 14px;
+}
+
+.btn-add-foto {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 2.5rem;
+    color: #ccc;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.btn-add-foto:hover {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.previews-container:not(:empty) + .btn-add-foto {
+    margin-top: 0;
+}
+
+/* ===== ESTILOS PARA INPUT DE ARQUIVO CSV CUSTOMIZADO ===== */
+.custom-file-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.btn-file-upload {
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    color: var(--primary-color);
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    text-align: center;
+    width: auto; /* Sobrescreve a largura padrão de .btn */
+    flex-shrink: 0;
+}
+
+.btn-file-upload:hover {
+    background-color: #e9ecef;
+}
+
+#csv-file-name {
+    color: #555;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

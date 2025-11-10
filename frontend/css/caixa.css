@@ -1,0 +1,42 @@
+/* Formulário de Abrir/Fechar Caixa */
+.caixa-form {
+    max-width: 600px; /* Mantém o formulário com uma largura agradável */
+    margin-top: 20px;
+}
+.caixa-form .input-group { 
+    margin-bottom: 20px; 
+}
+.caixa-form button { 
+    margin-top: 10px; 
+}
+
+/* Container para os botões */
+.caixa-action-card .form-actions {
+    max-width: 600px;
+    margin-top: 30px;
+    justify-content: space-between; 
+}
+
+/* Indicador de Status (Aberto/Fechado) */
+.status-indicator {
+    padding: 10px 15px; 
+    border-radius: 50px; 
+    font-weight: bold; 
+    color: white; 
+    text-align: center;
+    float: right;
+}
+.status-aberto { background-color: var(--success-color); }
+.status-fechado { background-color: var(--error-color); }
+
+.link-ver-todos {
+    display: block; 
+    text-align: right; 
+    margin-top: 15px; 
+    color: var(--secondary-color);
+    text-decoration: none; 
+    font-weight: bold;
+}
+.link-ver-todos:hover { 
+    text-decoration: underline; 
+}

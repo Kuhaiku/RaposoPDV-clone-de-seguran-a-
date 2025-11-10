@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Detalhes do Cliente</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/global.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { /* Cores do RaposoPDV */
+                        "primary": "#3498db",
+                        "secondary": "#2c3e50",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "text-light": "#333333",
+                        "text-dark": "#f6f7f8",
+                        "subtext-light": "#617589",
+                        "subtext-dark": "#a0aec0",
+                        "danger": "#e74c3c", // Cor de erro/delete
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: { /* Bordas do RaposoPDV */
+                        "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"
+                     },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; /* Ajuste tamanho ícones */ vertical-align: middle; }
+        body { min-height: 100vh; font-family: 'Inter', sans-serif; }
+         /* Esconde template de recibo */
+        #recibo-template { position: absolute; left: -9999px; top: auto; width: 400px; padding: 20px; background-color: white; font-family: 'Courier New', Courier, monospace; color: #000; font-size: 14px; }
+        /* Estilos do template de recibo */
+        .recibo-header { text-align: center; margin-bottom: 20px; } .recibo-header h2 { margin: 0; font-size: 1.2rem; } .recibo-header p { margin: 2px 0; } .recibo-info { margin-bottom: 20px; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 10px 0; } .recibo-info p { margin: 5px 0; } .recibo-tabela { width: 100%; border-collapse: collapse; margin-bottom: 20px; } .recibo-tabela th, .recibo-tabela td { padding: 5px 0; text-align: left; } .recibo-tabela thead { border-bottom: 1px dashed #000; } .recibo-tabela th:nth-child(2), .recibo-tabela td:nth-child(2) { text-align: center; } .recibo-tabela th:nth-child(3), .recibo-tabela td:nth-child(3), .recibo-tabela th:nth-child(4), .recibo-tabela td:nth-child(4) { text-align: right; } .recibo-total { text-align: right; font-size: 1.2rem; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px; } .recibo-footer { text-align: center; margin-top: 30px; }
+         /* Estilo para spinner */
+         .spinner { border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 2px solid currentColor; width: 1rem; height: 1rem; animation: spin 1s linear infinite; }
+         .spinner-small { border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 2px solid white; width: 0.8rem; height: 0.8rem; border-width: 1.5px; } /* Ajustado para spinner branco em botão escuro */
+         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Estilo básico modal */
+        .modal { display: none; }
+        .modal.is-open { display: flex; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+
+    <div class="sticky top-0 z-10 flex items-center bg-white dark:bg-background-dark p-4 pb-3 justify-between border-b border-gray-200 dark:border-gray-700">
+        <button onclick="window.location.href='clientes.html'" class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors" aria-label="Voltar para Clientes">
+             <span class="material-symbols-outlined text-text-light dark:text-text-dark text-2xl">arrow_back</span>
+         </button>
+        <div class="flex-1 text-center px-4">
+            <h1 id="nome-cliente-header" class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] truncate">Carregando...</h1>
+            <p class="text-subtext-light dark:text-subtext-dark text-xs">Detalhes e Histórico</p>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+             <button id="edit-client-button" class="flex items-center justify-center rounded-md h-8 px-2 bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Editar Cliente">
+                  <span class="material-symbols-outlined mr-1 text-sm">edit</span> Editar
+             </button>
+             <button id="delete-client-button" class="flex items-center justify-center rounded-md h-8 px-2 bg-danger/10 text-danger text-xs font-medium hover:bg-danger/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Excluir Cliente">
+                  <span class="material-symbols-outlined mr-1 text-sm">delete</span> Excluir
+             </button>
+        </div>
+    </div>
+    <section class="grid grid-cols-2 gap-4 p-4">
+        <div class="bg-white dark:bg-zinc-900 rounded-xl p-3 shadow-sm border dark:border-zinc-700 text-center">
+            <h3 class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Total Gasto</h3>
+            <p id="total-gasto" class="text-lg font-bold text-primary">R$ 0,00</p>
+        </div>
+        <div class="bg-white dark:bg-zinc-900 rounded-xl p-3 shadow-sm border dark:border-zinc-700 text-center">
+            <h3 class="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Nº de Compras</h3>
+            <p id="total-compras" class="text-lg font-bold text-primary">0</p>
+        </div>
+    </section>
+
+    <section class="px-4 pb-4">
+        <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border dark:border-zinc-700 p-4">
+               <h2 class="text-base font-semibold text-secondary dark:text-white mb-3">Dados Cadastrais</h2>
+               <div id="dados-cadastrais" class="space-y-2 text-sm">
+                   <p><strong class="font-medium text-zinc-600 dark:text-zinc-400 block text-xs">Nome:</strong> <span class="text-text-light dark:text-zinc-200">Carregando...</span></p>
+                   <p><strong class="font-medium text-zinc-600 dark:text-zinc-400 block text-xs">Telefone:</strong> <span class="text-text-light dark:text-zinc-200">...</span></p>
+                   <p><strong class="font-medium text-zinc-600 dark:text-zinc-400 block text-xs">CPF:</strong> <span class="text-text-light dark:text-zinc-200">...</span></p>
+                   <p><strong class="font-medium text-zinc-600 dark:text-zinc-400 block text-xs">Email:</strong> <span class="text-text-light dark:text-zinc-200">...</span></p>
+                   <p><strong class="font-medium text-zinc-600 dark:text-zinc-400 block text-xs">Endereço:</strong> <span class="text-text-light dark:text-zinc-200">...</span></p>
+               </div>
+          </div>
+     </section>
+
+
+    <div class="p-4 space-y-3">
+         <div class="flex justify-between items-center mb-2">
+             <h2 class="text-base font-semibold text-secondary dark:text-white">Compras Realizadas</h2>
+             <button id="gerar-relatorio-btn" class="hidden inline-flex items-center px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-md hover:bg-primary/20 transition-colors disabled:opacity-50">
+                  <span class="material-symbols-outlined mr-1 text-sm">download</span> Relatório
+             </button>
+         </div>
+         <div class="hidden items-center space-x-2 text-sm text-zinc-600 dark:text-zinc-400 mb-2" id="select-all-container">
+             <input type="checkbox" id="selecionar-todas" class="form-checkbox rounded text-primary focus:ring-primary/50 h-4 w-4 border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+             <label for="selecionar-todas">Selecionar todas as vendas</label>
+         </div>
+         <div id="historico-compras-list" class="space-y-3">
+             <div id="historico-placeholder" class="text-center py-6 text-zinc-500 dark:text-zinc-400">Carregando histórico...</div>
+            </div>
+    </div>
+</div>
+
+<div id="recibo-template">
+    <div class="recibo-header"> <h2 id="recibo-empresa-nome-relatorio">Relatório</h2> <p>Relatório de Compras</p> </div>
+    <div class="recibo-info"> <p><strong>Cliente:</strong> <span id="recibo-cliente-nome"></span></p> </div>
+    <div id="recibo-vendas-container"></div>
+    <div class="recibo-total"> <strong>TOTAL GERAL: <span id="recibo-total-geral"></span></strong> </div>
+    <div class="recibo-footer"> <p>Relatório gerado em: <span id="recibo-data-geracao"></span></p> </div>
+</div>
+
+<div id="edit-client-details-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-lg w-full max-w-lg mx-auto max-h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between p-4 border-b dark:border-zinc-700 flex-shrink-0">
+            <h2 class="text-lg font-bold text-secondary dark:text-white">Editar Cliente</h2>
+            <button class="close-modal-btn flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors" aria-label="Fechar">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+        <div class="overflow-y-auto p-4 flex-1">
+            <form id="edit-client-details-form" class="space-y-4">
+                 <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-nome">Nome Completo *</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="edit-details-nome" name="nome" type="text" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-telefone">Telefone *</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="edit-details-telefone" name="telefone" type="tel" required/>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-cpf">CPF</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="edit-details-cpf" name="cpf" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-email">E-mail</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="edit-details-email" name="email" type="email"/>
+                </div>
+                <div class="pt-2 border-t dark:border-zinc-700">
+                    <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">Endereço (Opcional)</h3>
+                     <div class="grid grid-cols-3 gap-4">
+                        <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-cep">CEP</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-details-cep" name="cep" type="text"/>
+                        </div>
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-logradouro">Logradouro</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-details-logradouro" name="logradouro" type="text"/>
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-3 gap-4 mt-3">
+                         <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-numero">Número</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-details-numero" name="numero" type="text"/>
+                        </div>
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-bairro">Bairro</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-details-bairro" name="bairro" type="text"/>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 mt-3">
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-cidade">Cidade</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-details-cidade" name="cidade" type="text"/>
+                        </div>
+                        <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-details-estado">UF</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-details-estado" name="estado" type="text" maxlength="2"/>
+                        </div>
+                    </div>
+                </div>
+                <div id="edit-client-details-message" class="text-sm font-medium hidden mt-4"></div>
+            </form>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t dark:border-zinc-700 flex-shrink-0">
+            <button type="button" class="close-modal-btn py-2 px-4 border border-zinc-300 dark:border-zinc-600 rounded-lg text-sm font-semibold text-secondary dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">Cancelar</button>
+            <button form="edit-client-details-form" type="submit" class="py-2 px-4 bg-primary rounded-lg text-sm font-bold text-white hover:bg-primary/90 transition-colors disabled:opacity-50 inline-flex items-center justify-center">Salvar Alterações</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="js/auth.js"></script>
+<script src="js/cliente-detalhes.js"></script>
+
+</body>
+</html>

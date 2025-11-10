@@ -1,0 +1,377 @@
+.nova-venda-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.input-busca {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.lista-produtos {
+    max-height: 60vh;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.produto-selecao-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.produto-selecao-card:hover {
+    border-color: var(--secondary-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+.produto-selecao-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+.produto-selecao-card h4 {
+    margin: 10px 0 5px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.produto-selecao-card p {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+/* Coluna da Direita - Carrinho */
+.cliente-selecao-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+.cliente-selecao-container .input-group {
+    flex-grow: 1;
+}
+.btn-novo-cliente {
+    height: 45px;
+    width: 45px;
+    border-radius: 5px;
+    border: 1px solid var(--secondary-color);
+    background-color: var(--secondary-color);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+.btn-novo-cliente:hover {
+    background-color: var(--primary-color);
+}
+.divider {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
+.carrinho-itens {
+    min-height: 150px;
+}
+.carrinho-vazio {
+    color: #999;
+    text-align: center;
+    padding-top: 50px;
+}
+.carrinho-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.carrinho-item-info {
+    flex-grow: 1;
+}
+.carrinho-item-nome {
+    font-weight: bold;
+}
+.carrinho-item-preco {
+    font-size: 0.9rem;
+    color: #777;
+}
+.carrinho-item-actions {
+    display: flex;
+    align-items: center;
+}
+.carrinho-item-actions button {
+    background: #eee;
+    border: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+}
+.carrinho-item-actions span {
+    margin: 0 10px;
+    font-weight: bold;
+}
+.btn-remover-item {
+    background: transparent;
+    border: none;
+    color: var(--error-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-left: 10px;
+}
+.total-venda {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+#finalizar-venda-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.gerar-recibo-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+    gap: 8px;
+}
+.gerar-recibo-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+.gerar-recibo-container label {
+    font-size: 0.9rem;
+    color: #555;
+    cursor: pointer;
+}
+
+@media (max-width: 992px) {
+    .nova-venda-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- ESTILOS PARA O TEMPLATE DO RECIBO --- */
+.recibo-container {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 400px;
+    padding: 20px;
+    background-color: white;
+    font-family: 'Courier New', Courier, monospace;
+    color: #000;
+    font-size: 14px;
+}
+.recibo-header { text-align: center; margin-bottom: 20px; }
+.recibo-header h2 { margin: 0; font-size: 1.2rem; }
+.recibo-header p { margin: 2px 0; }
+.recibo-info { margin-bottom: 20px; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 10px 0; }
+.recibo-info p { margin: 5px 0; }
+.recibo-tabela { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.recibo-tabela th, .recibo-tabela td { padding: 5px 0; text-align: left; }
+.recibo-tabela thead { border-bottom: 1px dashed #000; }
+.recibo-tabela th:nth-child(2), .recibo-tabela td:nth-child(2) { text-align: center; }
+.recibo-tabela th:nth-child(3), .recibo-tabela td:nth-child(3),
+.recibo-tabela th:nth-child(4), .recibo-trola td:nth-child(4) { text-align: right; }
+.recibo-total { text-align: right; font-size: 1.2rem; font-weight: bold; border-top: 1px dashed #000; padding-top: 10px; }
+.recibo-footer { text-align: center; margin-top: 30px; }
+
+/* ... (todo o seu css existente) ... */
+
+/* ESTILOS PARA BUSCA DE CLIENTE */
+.autocomplete-resultados {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+}
+.autocomplete-resultados div {
+    padding: 12px;
+    cursor: pointer;
+}
+.autocomplete-resultados div:hover {
+    background-color: #f4f6f9;
+}
+
+/* ESTILOS PARA SEÇÃO DE PAGAMENTO */
+.secao-pagamento {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.secao-pagamento h3 {
+    margin-bottom: 10px;
+}
+.metodos-pagamento {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.metodos-pagamento label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+#valores-parciais-container .input-group {
+    margin-bottom: 10px;
+}
+/* ... (todo o seu css existente) ... */
+
+/* Coluna da Direita - Carrinho */
+.cliente-selecao-container {
+    display: flex;
+    align-items: flex-end; /* Alterado de flex-end */
+    gap: 10px;
+}
+
+/* Garante que o campo de busca ocupe o espaço disponível */
+.cliente-selecao-container .input-busca {
+    flex-grow: 1; 
+}
+
+.btn-novo-cliente {
+    height: 45px;
+    width: 45px; /* Largura fixa */
+    border-radius: 5px;
+    border: 1px solid var(--secondary-color);
+    background-color: var(--secondary-color);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    flex-shrink: 0; /* Impede que o botão encolha */
+    transition: background-color 0.2s;
+}
+
+.btn-novo-cliente:hover {
+    background-color: var(--primary-color);
+}
+
+/* ... (todo o seu css existente) ... */
+
+/* ESTILOS PARA A LISTA DE CLIENTES NO MODAL DE BUSCA */
+.lista-modal-busca {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    max-height: 40vh;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.lista-modal-busca li {
+    padding: 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+
+.lista-modal-busca li:last-child {
+    border-bottom: none;
+}
+
+.lista-modal-busca li:hover {
+    background-color: #f4f6f9;
+}
+
+/* ... (todo o seu css existente) ... */
+
+/* ESTILOS PARA NOVA SELEÇÃO DE CLIENTE */
+.cliente-selecao-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cliente-selecao-container select {
+    flex-grow: 1; /* Faz o select ocupar o espaço disponível */
+}
+
+.btn-icone-busca {
+    height: 45px;
+    width: 45px;
+    border: 1px solid #ddd;
+    background-color: #f4f6f9;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+.btn-icone-busca:hover {
+    background-color: #e9ecef;
+}
+
+.btn-novo-cliente {
+    height: 45px;
+    width: 45px;
+    border-radius: 5px;
+    border: 1px solid var(--secondary-color);
+    background-color: var(--secondary-color);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+.btn-novo-cliente:hover {
+    background-color: var(--primary-color);
+}
+
+/* ESTILOS PARA A LISTA DE CLIENTES NO MODAL DE BUSCA */
+.lista-modal-busca {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+    max-height: 40vh;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.lista-modal-busca li {
+    padding: 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+
+.lista-modal-busca li:last-child {
+    border-bottom: none;
+}
+
+.lista-modal-busca li:hover {
+    background-color: #f4f6f9;
+}
+
+.lista-modal-busca .sem-resultado {
+    color: #999;
+    cursor: default;
+}

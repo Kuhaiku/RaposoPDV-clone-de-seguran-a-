@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresas Inativas | Super Admin</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/clientes.css">
+    <link rel="stylesheet" href="css/painel-superadmin.css">
+</head>
+<body>
+    <div class="painel-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"> <h2 style="color: #e74c3c;">Super Admin</h2> </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="superadmin-painel.html">Empresas Ativas</a></li>
+                    <li class="active"><a href="superadmin-inativas.html">Empresas Inativas</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer"> 
+                <button id="logout-superadmin-btn" class="btn-logout">Sair (Super Admin)</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header"> <h1>Empresas Inativas</h1> </header>
+            <section class="card">
+                <h2>Lista de Empresas Inativas</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome da Empresa</th>
+                                <th>E-mail de Contato</th>
+                                <th style="width: 150px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="empresas-inativas-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="js/superadmin-inativas.js"></script>
+</body>
+</html>

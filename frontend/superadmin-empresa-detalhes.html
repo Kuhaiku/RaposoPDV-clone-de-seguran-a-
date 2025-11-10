@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Empresa | Super Admin</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/clientes.css">
+    <link rel="stylesheet" href="css/painel-superadmin.css">
+</head>
+<body>
+    <div class="painel-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"> <h2 style="color: #e74c3c;">Super Admin</h2> </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="superadmin-painel.html">Gerenciar Empresas</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer"> 
+                <button id="logout-superadmin-btn" class="btn-logout">Sair (Super Admin)</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h1 id="header-nome-empresa">Carregando...</h1>
+                <a href="superadmin-painel.html" class="btn btn-secondary" style="width: auto; padding: 10px 20px;">Voltar para Lista</a>
+            </header>
+            <div class="detalhes-layout" style="grid-template-columns: 1fr 2fr; gap: 30px; align-items: flex-start;">
+                <div class="coluna-esquerda">
+                    <section class="card">
+                        <h2>Dados da Empresa</h2>
+                        <div id="dados-empresa-view" class="dados-grid"></div>
+                        <button id="btn-redefinir-senha-empresa" class="btn" style="margin-top: 20px; background-color: var(--secondary-color);">Redefinir Senha da Empresa</button>
+                    </section>
+                </div>
+                <div class="coluna-direita">
+                    <section class="card">
+                        <h2>Gestão de Mensalidades</h2>
+                        <div class="proximo-vencimento">
+                            <p><strong>Próximo Vencimento Calculado:</strong> <span id="proximo-vencimento">--/--/----</span></p>
+                        </div>
+                        <form id="add-pagamento-form" class="form-grid" style="grid-template-columns: 1fr 1fr; align-items: flex-end;">
+                            <div class="input-group">
+                                <label for="valor-pago">Valor Pago (R$)</label>
+                                <input type="number" step="0.01" id="valor-pago" required>
+                            </div>
+                            <button type="submit" class="btn">Registrar Pagamento Atual</button>
+                        </form>
+                        <div id="success-message" class="success-message" style="margin-top: 10px;"></div>
+                    </section>
+                    <section class="card">
+                        <h2>Histórico de Pagamentos</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data Pag.</th> <th>Valor Pago</th> <th>Mês/Ano Ref.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pagamentos-body"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="redefinir-senha-empresa-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>Redefinir Senha da Empresa</h2>
+            <form id="redefinir-senha-empresa-form">
+                <div class="input-group">
+                    <label for="nova-senha-empresa">Nova Senha</label>
+                    <input type="password" id="nova-senha-empresa" required minlength="6">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelar-redefinir-empresa-btn" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn">Salvar Nova Senha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/superadmin-empresa-detalhes.js"></script>
+</body>
+</html>

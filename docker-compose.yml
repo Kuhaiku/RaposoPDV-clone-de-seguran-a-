@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  raposo-gestao:
+    build: .
+    container_name: raposo_gestao_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    # ADICIONE ESTAS DUAS LINHAS ABAIXO
+    environment:
+      - TZ=America/Sao_Paulo
+    env_file:
+      - ./backend/.env

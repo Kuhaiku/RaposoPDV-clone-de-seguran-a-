@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos Inativos</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/clientes.css"> 
+    <link rel="stylesheet" href="css/produtos.css">
+</head>
+<body>
+    <div class="painel-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"> <h2>Raposo - PDV</h2> </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="painel.html">Dashboard</a></li>
+                    <li><a href="nova-venda.html">Nova Venda</a></li>
+                    <li><a href="historico.html">Histórico</a></li>
+                    <li><a href="clientes.html">Clientes</a></li>
+                    <li class="active"><a href="produtos.html">Produtos</a></li>
+                    <li><a href="caixa.html">Caixa</a></li>
+                    <li><a href="perfil-vendedor.html">Perfil Vendedor</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer"> <button id="logout-btn" class="btn-logout">Sair</button> </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>Produtos Inativos</h1>
+                <a href="produtos.html" class="btn" style="width: auto; padding: 10px 20px;">Voltar para Produtos Ativos</a>
+            </header>
+
+            <section class="card">
+                <h2>Lista de Produtos Inativos</h2>
+                <p>Aqui estão os produtos que foram removidos da loja, mas mantidos no histórico.</p>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-img">Foto</th>
+                                <th>Nome</th>
+                                <th>Preço</th>
+                                <th>Estoque</th>
+                                <th class="col-actions">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produtos-inativos-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/produtos-inativos.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Caixa</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/caixa.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+</head>
+<body>
+    <div class="painel-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"> <h2>Raposo - PDV</h2> </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="painel.html">Dashboard</a></li>
+                    <li><a href="nova-venda.html">Nova Venda</a></li>
+                    <li><a href="historico.html">Histórico</a></li>
+                    <li><a href="clientes.html">Clientes</a></li>
+                    <li><a href="produtos.html">Produtos</a></li>
+                    <li class="active"><a href="caixa.html">Caixa</a></li>
+                    <li><a href="perfil-vendedor.html">Perfil Vendedor</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer"> <button id="logout-btn" class="btn-logout">Sair</button> </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Controle de Caixa</h1>
+            </header>
+
+            <div class="caixa-wrapper">
+
+                <section id="caixa-action-card" class="card">
+                    </section>
+
+                <section class="card">
+                    <h2>Fechamentos no Mês Atual</h2>
+                    <div style="height: 300px; margin-top: 20px;">
+                        <canvas id="grafico-historico-caixa"></canvas>
+                    </div>
+                    
+                </section>
+                <div style="display: flex">
+                    <a style="text-align: center;" href="caixa-historico.html" id="ver-historico-btn" class="btn">Ver histórico completo</a>
+                </div>
+                
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/caixa.js"></script>
+</body>
+</html>

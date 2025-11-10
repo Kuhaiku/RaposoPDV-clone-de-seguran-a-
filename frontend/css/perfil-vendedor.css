@@ -1,0 +1,109 @@
+/* Layout Principal do Perfil */
+.perfil-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Coluna principal maior que a da direita */
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.coluna-principal {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Métricas em cards */
+.metricas-vendedor {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.metricas-vendedor .card p {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Filtro de Período */
+.filtro-periodo {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.btn-periodo {
+    padding: 10px 20px;
+    border: none;
+    background-color: #f4f6f9;
+    color: #555;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.btn-periodo:not(:last-child) {
+    border-right: 1px solid #ddd;
+}
+
+.btn-periodo.active {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+/* Coluna da Direita */
+.coluna-direita {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Lista Simples (para Top Produtos) */
+.lista-simples {
+    list-style: none;
+    padding: 0;
+}
+
+.lista-simples li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lista-simples li:last-child {
+    border-bottom: none;
+}
+
+.lista-simples .quantidade {
+    font-weight: bold;
+    color: var(--secondary-color);
+    background-color: #ecf0f1;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+}
+
+/* Tabela Simples (para Últimas Vendas) */
+.tabela-simples th, .tabela-simples td {
+    padding: 10px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+.tabela-simples thead th {
+    background-color: transparent;
+    border-bottom: 2px solid #ddd;
+}
+.tabela-simples tr:last-child td {
+    border-bottom: none;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+    .perfil-layout {
+        grid-template-columns: 1fr; /* Coluna única em telas menores */
+    }
+}

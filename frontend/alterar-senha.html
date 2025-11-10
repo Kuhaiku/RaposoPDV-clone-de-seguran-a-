@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Senha</title>
+    <link rel="stylesheet" href="css/global.css">
+</head>
+<body>
+    <div class="painel-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"> <h2>Raposo - PDV</h2> </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="painel.html">Dashboard</a></li>
+                    <li><a href="nova-venda.html">Nova Venda</a></li>
+                    <li><a href="historico.html">Histórico</a></li>
+                    <li><a href="clientes.html">Clientes</a></li>
+                    <li><a href="produtos.html">Produtos</a></li>
+                    <li><a href="caixa.html">Caixa</a></li>
+                    <li><a href="perfil-vendedor.html">Perfil Vendedor</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer"> <button id="logout-btn" class="btn-logout">Sair</button> </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Alterar Minha Senha</h1>
+            </header>
+            
+            <section class="card">
+                <h2>Alteração de Senha</h2>
+                <p>Por segurança, informe sua senha atual e a nova senha desejada.</p>
+                <form id="alterar-senha-form" style="max-width: 500px; margin-top: 20px;">
+                    <div class="input-group">
+                        <label for="senha-atual">Senha Atual</label>
+                        <input type="password" id="senha-atual" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="nova-senha">Nova Senha (mínimo 6 caracteres)</label>
+                        <input type="password" id="nova-senha" required minlength="6">
+                    </div>
+                    <div class="form-actions">
+                        <div id="success-message" class="success-message"></div>
+                        <button type="submit" class="btn">Salvar Nova Senha</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/alterar-senha.js"></script>
+</body>
+</html> 

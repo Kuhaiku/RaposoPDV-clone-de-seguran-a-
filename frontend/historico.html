@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Histórico de Vendas</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/vendas.css"> <link rel="stylesheet" href="css/clientes.css"> <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                     colors: { // Cores RaposoPDV
+                        "primary": "#3498db",
+                        "secondary": "#2c3e50",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "text-light": "#333333",
+                        "text-dark": "#f6f7f8",
+                        "subtext-light": "#617589",
+                        "subtext-dark": "#a0aec0",
+                        "success": "#2ecc71",
+                        "danger": "#e74c3c",
+                        "warning": "#f39c12",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: { /* Bordas RaposoPDV */
+                         "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"
+                     },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        body { min-height: 100vh; font-family: 'Inter', sans-serif; }
+         /* Garante que modal overlay funcione */
+        .modal-overlay { z-index: 1000; } /* Ajuste z-index se necessário */
+         /* Estilo spinner */
+         .spinner { border: 2px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 2px solid currentColor; width: 1rem; height: 1rem; animation: spin 1s linear infinite; }
+         .spinner-small { width: 0.8rem; height: 0.8rem; border-width: 1.5px; }
+         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+
+    <div class="sticky top-0 z-10 flex items-center bg-white dark:bg-background-dark p-4 pb-3 justify-between border-b border-gray-200 dark:border-gray-700">
+        <div class="flex size-10 shrink-0 items-center">
+            <button onclick="history.back()" class="flex items-center justify-center h-10 w-10 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors" aria-label="Voltar">
+                <span class="material-symbols-outlined text-text-light dark:text-text-dark text-2xl">arrow_back</span>
+            </button>
+        </div>
+        <h1 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Histórico de Vendas</h1>
+        <div class="flex w-10 items-center justify-end">
+             <button id="search-button" class="flex items-center justify-center h-10 w-10 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors" aria-label="Buscar">
+                <span class="material-symbols-outlined text-text-light dark:text-text-dark text-2xl">search</span>
+            </button>
+        </div>
+    </div>
+
+     <section class="p-4 bg-white dark:bg-zinc-900 border-b dark:border-zinc-700 shadow-sm">
+        <details> <summary class="cursor-pointer text-sm font-medium text-primary flex items-center justify-between">
+                <span>Filtrar Vendas</span>
+                <span class="material-symbols-outlined">filter_list</span>
+            </summary>
+            <form id="filtros-vendas-form" class="mt-4 space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+                <div class="input-group">
+                    <label for="data-inicio" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Data Início</label>
+                    <input type="date" id="data-inicio" class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2">
+                </div>
+                <div class="input-group">
+                    <label for="data-fim" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Data Fim</label>
+                    <input type="date" id="data-fim" class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2">
+                </div>
+                <div class="input-group">
+                    <label for="filtro-cliente" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Cliente</label>
+                    <input type="text" id="filtro-cliente" placeholder="Nome do cliente" class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2">
+                </div>
+                <div class="input-group">
+                    <label for="filtro-vendedor" class="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Vendedor</label>
+                    <select id="filtro-vendedor" class="form-select block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2 h-[34px]">
+                        <option value="">Todos</option>
+                        </select>
+                </div>
+                <div class="form-actions col-span-full flex justify-end gap-2 mt-3">
+                    <button type="button" id="limpar-filtros-btn" class="py-1.5 px-3 border border-zinc-300 dark:border-zinc-600 rounded-md text-xs font-semibold text-secondary dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">Limpar</button>
+                    <button type="submit" class="py-1.5 px-4 bg-primary rounded-md text-xs font-bold text-white hover:bg-primary/90 transition-colors inline-flex items-center">Aplicar Filtros</button>
+                </div>
+            </form>
+         </details>
+    </section>
+
+    <div id="vendas-list-container" class="flex-1 p-4 space-y-4">
+        <div id="vendas-list-placeholder" class="text-center py-10 text-gray-500 dark:text-gray-400">Carregando histórico...</div>
+
+         </div>
+</div>
+
+<div id="details-modal" class="modal-overlay hidden fixed inset-0 bg-black/60 items-center justify-center p-4">
+    <div class="modal-content bg-white dark:bg-zinc-900 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+         <div class="flex justify-between items-center p-4 border-b dark:border-zinc-700">
+            <h2 class="text-lg font-bold text-secondary dark:text-white">Detalhes da Venda <span id="modal-venda-id"></span></h2>
+             <button type="button" id="close-modal-btn-header" class="close-modal-btn text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
+                 <span class="material-symbols-outlined">close</span>
+             </button>
+         </div>
+         <div class="p-4 overflow-y-auto">
+            <div id="modal-venda-info" class="venda-info grid grid-cols-2 gap-x-4 gap-y-2 mb-4 pb-4 border-b dark:border-zinc-700 text-sm">
+                 <p class="col-span-2"><strong class="text-zinc-600 dark:text-zinc-400">Cliente:</strong> <span class="text-text-light dark:text-zinc-200">...</span></p>
+                 <p><strong class="text-zinc-600 dark:text-zinc-400">Vendedor:</strong> <span class="text-text-light dark:text-zinc-200">...</span></p>
+                 <p><strong class="text-zinc-600 dark:text-zinc-400">Data:</strong> <span class="text-text-light dark:text-zinc-200">...</span></p>
+                 <p class="col-span-2 mt-1"><strong class="text-zinc-600 dark:text-zinc-400">Valor Total:</strong> <span class="text-primary font-semibold">R$ ...</span></p>
+            </div>
+            <h3 class="text-base font-semibold text-secondary dark:text-white mb-2">Itens Vendidos</h3>
+            <div class="table-container border rounded-lg overflow-hidden dark:border-zinc-700">
+                <table class="modal-table w-full text-sm text-left">
+                    <thead class="bg-gray-50 dark:bg-zinc-800 text-xs uppercase text-zinc-700 dark:text-zinc-400">
+                        <tr>
+                            <th scope="col" class="px-4 py-2">Produto</th>
+                            <th scope="col" class="px-4 py-2 text-center">Qtd.</th>
+                            <th scope="col" class="px-4 py-2 text-right">Preço Unit.</th>
+                            <th scope="col" class="px-4 py-2 text-right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-itens-body" class="divide-y dark:divide-zinc-700">
+                        </tbody>
+                </table>
+            </div>
+             <h3 class="text-base font-semibold text-secondary dark:text-white mt-4 mb-2">Pagamentos Recebidos</h3>
+             <div id="modal-pagamentos-list" class="text-sm space-y-1 text-text-light dark:text-zinc-300">
+                  <p>Carregando...</p>
+             </div>
+        </div>
+         <div class="form-actions flex justify-end p-4 border-t dark:border-zinc-700">
+            <button type="button" id="close-modal-btn-footer" class="close-modal-btn py-2 px-4 border border-zinc-300 dark:border-zinc-600 rounded-lg text-sm font-semibold text-secondary dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/vendas.js"></script>
+
+</body>
+</html>

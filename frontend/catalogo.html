@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/catalogo.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+</head>
+<body>
+    <header class="catalogo-header">
+        <h1 id="nome-empresa-header">Carregando Catálogo...</h1>
+    </header>
+
+    <main class="catalogo-container">
+        <div class="filtros-catalogo">
+            <input type="text" id="busca-produto-catalogo" class="input-busca" placeholder="Buscar produto por nome...">
+            <div id="filtros-categoria" class="filtros-categoria">
+            </div>
+        </div>
+
+        <div id="catalogo-grid" class="catalogo-grid">
+        </div>
+    </main>
+
+    <footer class="catalogo-footer">
+        <p>&copy; 2025 Raposo Gestão. Todos os direitos reservados.</p>
+    </footer>
+    
+    <div id="lightbox-overlay" class="lightbox-overlay">
+        <span class="lightbox-close">&times;</span>
+        <div id="lightbox-swiper-container" class="swiper-container">
+            <div class="swiper-wrapper">
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="js/catalogo.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Painel de Vendas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="css/global.css">
+    <script>
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                // Usando as cores do RaposoPDV para consistência
+                primary: "#3498db", // Azul Raposo
+                secondary: "#2c3e50", // Azul Escuro Raposo
+                "background-light": "#f6f7f8", // Fundo claro similar ao Raposo
+                "background-dark": "#101922", // Fundo escuro
+                "text-light": "#333333", // Texto claro padrão
+                "text-dark": "#F5F5F5", // Texto escuro padrão
+                success: "#2ecc71", // Verde Raposo
+                warning: "#f39c12", // Laranja Raposo (ou #FFC107 se preferir)
+                danger: "#e74c3c", // Vermelho Raposo
+              },
+              fontFamily: {
+                display: ["Inter", "sans-serif"],
+              },
+              borderRadius: {
+                DEFAULT: "0.5rem", // 8px (Padrão Raposo)
+                lg: "0.75rem", // 12px
+                xl: "1rem", // 16px
+                full: "9999px",
+              },
+            },
+          },
+        };
+      </script>
+    <style>
+        body { min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { vertical-align: middle; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        /* Ajuste para botões de filtro de período */
+        .period-filter-button { transition: background-color 0.2s, color 0.2s; }
+        .period-filter-button.active { background-color: theme('colors.primary'); color: white; }
+        .dark .period-filter-button.active { background-color: theme('colors.primary'); color: white; } /* Mantém a cor primária no dark mode */
+        /* Garante que o conteúdo principal não seja coberto pelo bottom nav */
+        body { padding-bottom: 4rem; /* Altura do bottom nav */ }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+
+    <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 border-b dark:border-zinc-700">
+        <div class="flex size-12 shrink-0 items-center">
+            <span class="material-symbols-outlined text-primary text-3xl">storefront</span>
+        </div>
+        <h1 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-secondary dark:text-text-dark">Painel</h1>
+        <div class="flex w-12 items-center justify-end">
+            
+             <button id="logout-btn" class="ml-2 flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-danger hover:bg-danger/10 transition-colors" title="Sair">
+                <span class="material-symbols-outlined">logout</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex gap-3 p-3 overflow-x-auto whitespace-nowrap border-b dark:border-zinc-700">
+        <button class="period-filter-button flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-200 dark:bg-gray-700 px-4 active">
+            <p class="text-sm font-medium leading-normal">Este Mês</p>
+        </button>
+        </div>
+
+    <div class="flex flex-wrap gap-4 p-4">
+        <div class="flex min-w-[158px] flex-1 flex-col gap-1 rounded-xl p-4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-sm">
+            <p class="text-sm font-medium leading-normal text-gray-600 dark:text-gray-400">Vendas (Período)</p>
+            <p id="faturamento-periodo" class="tracking-tight text-2xl font-bold leading-tight text-primary">R$ 0,00</p>
+        </div>
+        </div>
+
+    <div class="px-4 py-6">
+        <div class="grid grid-cols-3 gap-4">
+            <a href="nova-venda.html" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-sm aspect-square hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+                <span class="material-symbols-outlined text-4xl text-primary">add_shopping_cart</span>
+                <span class="mt-2 text-xs sm:text-sm font-medium text-center text-secondary dark:text-zinc-300">Nova Venda</span>
+            </a>
+            <a href="produtos.html" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-sm aspect-square hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+                <span class="material-symbols-outlined text-4xl text-primary">inventory_2</span>
+                <span class="mt-2 text-xs sm:text-sm font-medium text-center text-secondary dark:text-zinc-300">Produtos</span>
+            </a>
+            <a href="clientes.html" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-sm aspect-square hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+                <span class="material-symbols-outlined text-4xl text-primary">groups</span>
+                <span class="mt-2 text-xs sm:text-sm font-medium text-center text-secondary dark:text-zinc-300">Clientes</span>
+            </a>
+            <a href="historico.html" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-sm aspect-square hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+                <span class="material-symbols-outlined text-4xl text-primary">history</span>
+                <span class="mt-2 text-xs sm:text-sm font-medium text-center text-secondary dark:text-zinc-300">Histórico</span>
+            </a>
+            <a href="historico-periodos.html" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-sm aspect-square hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+                <span class="material-symbols-outlined text-4xl text-primary">event_repeat</span>
+                <span class="mt-2 text-xs sm:text-sm font-medium text-center text-secondary dark:text-zinc-300">Períodos</span>
+            </a>
+             <a href="calculadora.html" class="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-sm aspect-square hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+                <span class="material-symbols-outlined text-4xl text-primary">calculate</span>
+                <span class="mt-2 text-xs sm:text-sm font-medium text-center text-secondary dark:text-zinc-300">Calculadora</span>
+            </a>
+            </div>
+    </div>
+
+    </div>
+
+<script src="js/auth.js"></script> <script src="js/painel.js"></script> </body>
+</html>

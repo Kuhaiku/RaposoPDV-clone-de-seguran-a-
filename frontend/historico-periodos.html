@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gerenciamento de Períodos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3498db", /* Corrigido para a cor principal do projeto */
+                        "secondary": "#2c3e50", /* Corrigido para a cor secundária do projeto */
+                        "success": "#2ecc71",
+                        "danger": "#e74c3c",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { min-height: 100dvh; }
+        .spinner { border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 2px solid white; width: 1rem; height: 1rem; animation: spin 1s linear infinite; }
+        .spinner-small { width: 0.8rem; height: 0.8rem; border-width: 1.5px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<header class="sticky top-0 z-10 flex h-16 items-center border-b border-gray-200 dark:border-gray-800 bg-background-light dark:bg-background-dark px-4 justify-between">
+<a href="./painel.html" class="text-gray-800 dark:text-gray-200 flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+<h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex-1 text-center pr-10">Gerenciamento de Períodos</h1>
+<div class="w-10"></div>
+</header>
+<main class="flex-grow p-4">
+<div class="mb-6">
+<button class="flex min-w-[84px] w-full max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-danger text-white text-base font-bold leading-normal tracking-[0.015em] mx-auto peer hover:bg-danger/90 transition-colors" id="fechar-periodo-btn">
+<span class="truncate">ENCERRAR PERÍODO ATUAL</span>
+</button>
+</div>
+
+<section>
+<h2 class="text-gray-900 dark:text-gray-100 text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Histórico de Períodos Fechados</h2>
+<div id="historico-periodos-container" class="flex flex-col gap-3">
+    <div class="text-center py-6 text-gray-500 dark:text-gray-400" id="historico-placeholder">Carregando histórico...</div>
+</div>
+</section>
+</main>
+</div>
+
+<div class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 dark:bg-opacity-80 z-40 items-center justify-center p-4" id="confirm-modal">
+<div class="relative w-full max-w-sm m-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col gap-6">
+<h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Confirmar Encerramento</h2>
+<p class="text-gray-600 dark:text-gray-400 text-base">Para sua segurança, digite sua senha para confirmar o fechamento do período e o cálculo da sua comissão.</p>
+<form id="fechar-periodo-form">
+<div class="relative">
+<label class="sr-only" for="password-confirm">Senha</label>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-gray-100 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-background-dark focus:border-primary h-14 placeholder:text-gray-500 dark:placeholder:text-gray-400 p-[15px] text-base font-normal leading-normal" id="password-confirm" placeholder="Digite sua senha" type="password" required/>
+</div>
+<div class="flex justify-end gap-3 pt-6">
+<button type="button" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" id="cancel-btn">
+<span class="truncate">Cancelar</span>
+</button>
+<button type="submit" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-danger text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-danger/90 transition-colors" id="confirm-btn">
+<span class="truncate">Confirmar</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+
+<div class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 dark:bg-opacity-80 z-50 items-center justify-center p-4" id="success-modal">
+<div class="relative w-full max-w-sm m-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col items-center gap-4">
+<div class="flex items-center justify-center w-16 h-16 rounded-full bg-success/20 dark:bg-success/50">
+<span class="material-symbols-outlined text-4xl text-success">check_circle</span>
+</div>
+<h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Sucesso!</h2>
+<p class="text-gray-600 dark:text-gray-400 text-base text-center" id="success-message">O período foi fechado com êxito.</p>
+<button class="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors" id="ok-btn">
+<span class="truncate">OK</span>
+</button>
+</div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/historico-periodos.js"></script>
+</body></html>

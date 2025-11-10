@@ -1,0 +1,607 @@
+/* Reset Básico e Variáveis Globais */
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --background-color: #ecf0f1;
+  --text-color: #333;
+  --error-color: #e74c3c;
+  --success-color: #2ecc71;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Componentes Globais */
+.btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: var(--secondary-color);
+}
+
+.error-message {
+  margin-top: 15px;
+  color: var(--error-color);
+  font-weight: bold;
+  min-height: 20px;
+}
+
+/* Layout Principal do Painel */
+.painel-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #4a627a;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 20px 0;
+}
+
+.sidebar-nav li a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 15px 20px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-nav li a:hover,
+.sidebar-nav li.active a {
+  background-color: #4a627a;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px;
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid white;
+  border-radius: 5px;
+  background-color: transparent;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+  background-color: white;
+  color: var(--primary-color);
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 30px;
+  background-color: #f4f6f9;
+}
+
+.main-header h1 {
+  margin-bottom: 30px;
+  color: var(--primary-color);
+}
+
+.card {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.card h3 {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+/* ... todo o seu CSS existente aqui ... */
+
+.card h3 {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+/* Container do Gráfico - Layout Corrigido */
+.grafico-vendas .card {
+  /* Define uma altura fixa para a caixa do gráfico e remove o scroll */
+  height: 400px; /* Ajuste este valor se quiser mais alto ou mais baixo */
+  display: flex;
+  flex-direction: column;
+}
+
+.grafico-vendas canvas {
+  /* Garante que o canvas se comporte bem dentro do card flexível */
+  position: relative;
+  width: 100% !important;
+  height: 100% !important;
+}
+/* ============================================= */
+/* Componente: Campo de Busca          */
+/* ============================================= */
+.input-busca {
+  width: 100%;
+  padding: 12px 15px 12px 45px; /* Aumenta o padding à esquerda para o ícone */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  transition: all 0.3s ease; /* Efeito de transição suave */
+
+  /* Ícone de Lupa (SVG embutido no CSS) */
+  
+  background-repeat: no-repeat;
+  background-position: 15px center; /* Posição do ícone */
+}
+
+/* Efeito ao clicar (foco) no campo de busca */
+.input-busca:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); /* Sombra suave azul */
+}
+/* ============================================= */
+/* Componente: Campos de Seleção (Select)      */
+/* ============================================= */
+
+.input-group select {
+  /* Reseta a aparência padrão do navegador */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* Estilos para combinar com os outros inputs */
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+
+  /* Seta customizada (SVG embutido) */
+ 
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  padding-right: 40px; /* Espaço para a seta não sobrepor o texto */
+}
+
+/* Efeito de foco para o select, igual ao do input */
+.input-group select:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+a {
+  text-decoration: none;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.btn-secondary {
+  background-color: var(--error-color);
+}
+.btn-secondary:hover {
+  background-color: var(--text-color);
+}
+
+/* ============================================= */
+/* Componentes de Formulário (NOVA SEÇÃO GLOBAL) */
+/* ============================================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+.input-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: white;
+}
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.form-actions .success-message {
+  flex-grow: 1;
+  text-align: left;
+  margin: 0;
+}
+/* ============================================= */
+/* Componente: Campo de Busca                    */
+/* ============================================= */
+.input-busca {
+  width: 100%;
+  padding: 12px 15px 12px 45px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+
+  background-repeat: no-repeat;
+  background-position: 15px center;
+}
+.input-busca:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* ============================================= */
+/* Componente: Campos de Seleção (Select)      */
+/* ============================================= */
+.input-group select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+ 
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  padding-right: 40px;
+}
+
+/* Reset Básico e Variáveis Globais */
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --background-color: #ecf0f1;
+  --text-color: #333;
+  --error-color: #e74c3c;
+  --success-color: #2ecc71;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  resize: vertical;
+}
+textarea:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+}
+
+/* ============================================= */
+/* Componentes Globais                           */
+/* ============================================= */
+.btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.btn:hover {
+  background-color: var(--secondary-color);
+}
+.btn-secondary {
+  background-color: #7f8c8d;
+}
+.btn-secondary:hover {
+  background-color: #95a5a6;
+}
+.error-message {
+  margin-top: 15px;
+  color: var(--error-color);
+  font-weight: bold;
+  min-height: 20px;
+}
+.success-message {
+  color: var(--success-color);
+  font-weight: bold;
+}
+.link-tabela {
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: bold;
+}
+.link-tabela:hover {
+  text-decoration: underline;
+}
+
+/* ============================================= */
+/* Layout Principal do Painel (ESSENCIAL PARA A BARRA LATERAL) */
+/* ============================================= */
+.painel-container {
+  display: flex;
+  min-height: 100vh;
+}
+.sidebar {
+  width: 250px;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.sidebar-header {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #4a627a;
+}
+.sidebar-nav ul {
+  list-style: none;
+  padding: 20px 0;
+}
+.sidebar-nav li a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  padding: 15px 20px;
+  transition: background-color 0.3s ease;
+}
+.sidebar-nav li a:hover,
+.sidebar-nav li.active a {
+  background-color: #4a627a;
+}
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px;
+}
+.btn-logout {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid white;
+  border-radius: 5px;
+  background-color: transparent;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-logout:hover {
+  background-color: white;
+  color: var(--primary-color);
+}
+.main-content {
+  flex-grow: 1;
+  padding: 30px;
+  background-color: #f4f6f9;
+}
+.main-header h1 {
+  margin-bottom: 30px;
+  color: var(--primary-color);
+}
+.card {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+}
+.card h2 {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+.card h3 {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+/* ============================================= */
+/* Componentes de Formulário */
+/* ============================================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+.input-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: white;
+}
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.form-actions .success-message {
+  flex-grow: 1;
+  text-align: left;
+  margin: 0;
+}
+
+/* ============================================= */
+/* Componente: Campo de Busca */
+/* ============================================= */
+.input-busca {
+  width: 100%;
+  padding: 12px 15px 12px 45px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+ 
+  background-repeat: no-repeat;
+  background-position: 15px center;
+}
+.input-busca:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  background-image: none;
+}
+
+/* ============================================= */
+/* Componente: Campos de Seleção (Select) */
+/* ============================================= */
+.input-group select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+ 
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  padding-right: 40px;
+}
+
+/* ============================================= */
+/* Estilos Específicos do Rodapé do Menu Lateral */
+/* ============================================= */
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px;
+  /* NOVO: Organiza os botões verticalmente */
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Adiciona um espaço entre os botões */
+}
+
+/* Garante que o link se comporte como um botão de verdade */
+.sidebar-footer a.btn {
+  padding: 12px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 14px; /* Ajusta o tamanho da fonte para caber melhor */
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid white;
+  border-radius: 5px;
+  background-color: transparent;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-logout:hover {
+  background-color: white;
+  color: var(--primary-color);
+}
+
+/* ============================================= */
+/* Layout do Cabeçalho com Ações (Botões)        */
+/* ============================================= */
+
+.header-com-acoes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.header-actions .btn, .header-actions a.btn {
+    width: auto; /* Permite que os botões tenham larguras diferentes */
+    padding: 10px 20px;
+}

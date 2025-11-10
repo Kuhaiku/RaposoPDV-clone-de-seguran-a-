@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venda Concluída</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3498db", // Azul Primário
+                        "secondary": "#2c3e50", // Azul Escuro
+                        "success": "#2ecc71", // Verde (para confirmação)
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+        body { min-height: 100vh; font-family: 'Inter', sans-serif; }
+         /* Estilos para o recibo que será capturado */
+        #recibo-container {
+             font-family: 'Courier New', Courier, monospace; /* Fonte monoespaçada para recibo */
+             color: #000; /* Texto preto para impressão/imagem */
+        }
+        #recibo-container h2, #recibo-container h3 { font-weight: bold; }
+        #recibo-container hr { border-top: 1px dashed #000; margin: 8px 0; }
+        #recibo-container table { width: 100%; border-collapse: collapse; font-size: 0.8rem;}
+        #recibo-container th, #recibo-container td { padding: 2px 0; }
+        #recibo-container th { text-align: left; border-bottom: 1px dashed #000;}
+        #recibo-container td:nth-child(2), td:nth-child(3) { text-align: center; }
+        #recibo-container td:last-child { text-align: right; }
+        #recibo-container .total-label { font-weight: bold; }
+        #recibo-container .total-value { font-weight: bold; font-size: 1rem; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+
+<div class="relative flex min-h-screen w-full flex-col group/design-root overflow-x-hidden pb-24"> <div class="flex flex-col items-center justify-center p-4 pt-8 text-center">
+        <div class="flex items-center justify-center size-16 bg-success/20 rounded-full mb-4">
+            <span class="material-symbols-outlined text-success text-4xl">check_circle</span>
+        </div>
+        <h1 class="text-secondary dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em]">Venda Concluída!</h1>
+        <p class="text-secondary/70 dark:text-white/70 text-base font-normal leading-normal pt-1">Venda <span id="numero-venda">#...</span> registrada com sucesso.</p>
+    </div>
+
+    <div class="flex-grow p-4">
+        <div id="recibo-container" class="bg-white dark:bg-zinc-900 rounded-xl shadow-md p-5 max-w-lg mx-auto">
+            <div id="recibo-header" class="text-center mb-3">
+                 <h2 class="text-lg" id="recibo-nome-empresa">Carregando...</h2>
+                 <p class="text-xs" id="recibo-endereco-empresa"></p>
+                 <p class="text-xs" id="recibo-telefone-empresa"></p>
+                 <hr>
+             </div>
+
+            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
+                <div class="flex flex-col"><span class="text-xs text-zinc-500">Cliente:</span> <span id="recibo-cliente-nome" class="font-medium">...</span></div>
+                <div class="flex flex-col"><span class="text-xs text-zinc-500">Data:</span> <span id="recibo-data" class="font-medium">...</span></div>
+                <div class="flex flex-col"><span class="text-xs text-zinc-500">Vendedor:</span> <span id="recibo-vendedor-nome" class="font-medium">...</span></div>
+                <div class="flex flex-col"><span class="text-xs text-zinc-500">Venda Nº:</span> <span id="recibo-venda-id" class="font-medium">...</span></div>
+            </div>
+            <hr>
+
+            <h3 class="text-sm font-semibold mt-3 mb-1">Itens:</h3>
+            <table id="recibo-itens-table" class="mb-3">
+                <thead>
+                    <tr><th>Produto</th><th>Qtd</th><th>Unit.</th><th>Subtotal</th></tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <hr>
+
+            <div id="recibo-pagamentos" class="mt-3 mb-3 text-sm space-y-1">
+                 <h3 class="text-sm font-semibold mb-1">Pagamento:</h3>
+                </div>
+            <hr>
+
+            <div class="flex justify-between items-center mt-3">
+                <p class="total-label text-base">TOTAL:</p>
+                <p id="recibo-total-valor" class="total-value text-base">R$ ...</p>
+            </div>
+
+             <div class="text-center text-xs mt-4 text-zinc-500">
+                  Obrigado pela preferência!
+             </div>
+        </div>
+    </div>
+
+    <div class="p-4 space-y-3 sticky bottom-0 bg-background-light dark:bg-background-dark border-t dark:border-zinc-800">
+        <button id="btn-compartilhar" class="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-base shadow-lg shadow-primary/30 hover:bg-primary/90 transition-colors">
+            <span class="material-symbols-outlined">share</span>
+            Compartilhar Recibo
+        </button>
+        <div class="grid grid-cols-2 gap-3">
+            <button id="btn-inicio" class="w-full bg-zinc-200 dark:bg-zinc-700 text-secondary dark:text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors">
+                <span class="material-symbols-outlined">home</span>
+                Início
+            </button>
+            <button id="btn-nova-venda" class="w-full bg-zinc-200 dark:bg-zinc-700 text-secondary dark:text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors">
+                <span class="material-symbols-outlined">add_shopping_cart</span>
+                Nova Venda
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/venda-concluida.js"></script>
+
+</body>
+</html>

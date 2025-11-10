@@ -1,0 +1,40 @@
+.tabs-container {
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+}
+.tab {
+    display: inline-block;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #555;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
+}
+.tab.active {
+    color: var(--secondary-color);
+    border-bottom-color: var(--secondary-color);
+}
+.btn-tabela {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+.btn-tabela.inativar { background-color: var(--error-color); }
+.btn-tabela.reativar { background-color: var(--success-color); }
+
+/* Estilos para os status de pagamento na tabela */
+.status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-align: center;
+    color: white;
+    display: inline-block;
+}
+
+.status-pago { background-color: var(--success-color); }
+.status-atrasado { background-color: var(--error-color); }
+.status-aguardando { background-color: #f39c12; } /* Laranja */

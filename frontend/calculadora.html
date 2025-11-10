@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Calculadora de Porcentagem</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#3498db", /* Corrigido para a cor principal do projeto */
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"}, /* Corrigido para as bordas do projeto */
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: 100vh;
+    }
+    .spinner { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 2px solid currentColor; width: 1rem; height: 1rem; animation: spin 1s linear infinite; }
+    .spinner-small { width: 0.8rem; height: 0.8rem; border-width: 1.5px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<header class="sticky top-0 z-10 flex h-16 items-center border-b border-gray-200 dark:border-gray-800 bg-background-light dark:bg-background-dark px-4 justify-between">
+<a href="./painel.html" class="text-gray-800 dark:text-gray-200 flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+<h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex-1 text-center pr-10">Calculadora de Porcentagem</h1>
+</header>
+<main class="flex flex-col flex-1 p-4 space-y-6">
+<div class="flex flex-col">
+<label class="text-base font-medium text-gray-700 dark:text-gray-300 pb-2" for="total-value">Valor Base (Total de Vendas)</label>
+<div class="flex w-full items-stretch rounded-lg shadow-sm">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-l-lg text-gray-900 dark:text-gray-100 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:border-primary h-14 placeholder:text-gray-500 dark:placeholder:text-gray-400 p-4 text-base font-normal" id="total-value" placeholder="Insira o valor" type="text"/>
+<button id="load-sales-button" aria-label="Adicionar de uma venda" class="text-gray-600 dark:text-gray-400 flex border border-l-0 border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 items-center justify-center px-4 rounded-r-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col">
+<label class="text-base font-medium text-gray-700 dark:text-gray-300 pb-2" for="percentage">Porcentagem (%)</label>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-gray-100 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:border-primary h-14 placeholder:text-gray-500 dark:placeholder:text-gray-400 p-4 text-base font-normal shadow-sm" id="percentage" placeholder="Ex: 15" type="text"/>
+</div>
+<div class="flex flex-col">
+<label class="text-base font-medium text-gray-700 dark:text-gray-300 pb-2" for="result">Resultado</label>
+<div class="relative">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-primary dark:text-primary focus:outline-0 focus:ring-0 border-none bg-primary/10 dark:bg-primary/20 h-14 placeholder:text-primary/70 p-4 text-lg font-bold" id="result" readonly="" value="R$ 0,00"/>
+</div>
+</div>
+</main>
+<footer class="p-4 mt-auto">
+<button id="clear-button" class="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-transparent text-gray-700 dark:text-gray-300 text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="truncate">Limpar</span>
+</button>
+</footer>
+</div>
+<script src="js/auth.js"></script>
+<script src="js/calculadora.js"></script>
+</body></html>

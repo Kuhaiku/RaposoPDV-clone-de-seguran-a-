@@ -1,0 +1,46 @@
+.metricas-cliente {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.metricas-cliente .card p {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+.detalhes-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Coluna de dados 1/3, coluna de histórico 2/3 */
+    gap: 30px;
+    align-items: flex-start;
+}
+.dados-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+.dados-grid p {
+    font-size: 1rem;
+    color: #555;
+}
+.dados-grid p strong {
+    display: block;
+    color: #333;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+.link-tabela {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+.link-tabela:hover {
+    text-decoration: underline;
+}
+@media (max-width: 992px) {
+    .detalhes-layout {
+        grid-template-columns: 1fr; /* Coluna única em telas menores */
+    }
+}

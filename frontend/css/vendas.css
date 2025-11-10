@@ -1,0 +1,26 @@
+/* Estilos para informações de detalhe da venda no modal */
+.venda-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 20px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.venda-info p {
+    font-size: 1rem;
+}
+
+.venda-info p strong {
+    color: var(--primary-color);
+}
+
+/* Tabela dentro do modal */
+.modal-table th, .modal-table td {
+    padding: 10px;
+}
+
+.modal-table thead th {
+    background-color: #f8f9fa;
+}

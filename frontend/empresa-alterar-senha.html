@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Senha da Empresa</title>
+    <link rel="stylesheet" href="css/global.css">
+</head>
+<body>
+    <div class="painel-container">
+        <aside class="sidebar">
+            <div class="sidebar-header"> <h2 id="nome-empresa-header">Carregando...</h2> </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="painel-empresa.html">Funcionários</a></li>
+                    <li class="active"><a href="empresa-alterar-senha.html">Alterar Minha Senha</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="login.html" class="btn btn-secondary">Acessar Painel de Vendas</a>
+                <button id="logout-empresa-btn" class="btn-logout">Sair (Empresa)</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Alterar Senha da Empresa</h1>
+            </header>
+            
+            <section class="card">
+                <h2>Alteração de Senha</h2>
+                <p>Por segurança, informe sua senha de acesso atual e a nova senha desejada.</p>
+                <form id="alterar-senha-empresa-form" style="max-width: 500px; margin-top: 20px;">
+                    <div class="input-group">
+                        <label for="senha-atual">Senha Atual</label>
+                        <input type="password" id="senha-atual" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="nova-senha">Nova Senha (mínimo 6 caracteres)</label>
+                        <input type="password" id="nova-senha" required minlength="6">
+                    </div>
+                    <div class="form-actions">
+                        <div id="success-message" class="success-message"></div>
+                        <button type="submit" class="btn">Salvar Nova Senha</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/empresa-alterar-senha.js"></script>
+</body>
+</html>

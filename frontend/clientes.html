@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Lista de Clientes</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/global.css">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class", // Habilita dark mode via classe 'dark'
+            theme: {
+                extend: {
+                    colors: {
+                        // Usando cores do RaposoPDV
+                        "primary": "#3498db",
+                        "secondary": "#2c3e50",
+                        "background-light": "#f6f7f8", // Ajustado para f6f7f8
+                        "background-dark": "#101922", // Mantido
+                        "text-light": "#333333", // Ajustado para #333
+                        "text-dark": "#f6f7f8", // Ajustado para f6f7f8
+                        "subtext-light": "#617589",
+                        "subtext-dark": "#a0aec0",
+                        "danger": "#e74c3c", // Cor de erro/delete
+                        "warning": "#f39c12", // Cor de aviso/editar (opcional)
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem", // 8px
+                        "lg": "0.75rem", // 12px
+                        "xl": "1rem", // 16px
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; /* Ajuste para ícones menores nos botões */
+            vertical-align: middle;
+        }
+        body { min-height: 100vh; font-family: 'Inter', sans-serif; }
+        /* Estilos básicos para os modais */
+        .modal { display: none; }
+        .modal.is-open { display: flex; }
+         /* Adiciona padding inferior para compensar o botão flutuante */
+        body { padding-bottom: 6rem; }
+         /* Estilo para spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 2px solid white;
+            width: 1rem; /* 16px */
+            height: 1rem; /* 16px */
+            animation: spin 1s linear infinite;
+        }
+         .spinner-small { /* Para botões menores */
+             border-color: currentColor; /* Usa a cor do texto do botão */
+             border-top-color: transparent;
+             width: 0.8rem; height: 0.8rem; border-width: 1.5px;
+         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+
+    <div class="sticky top-0 z-10 bg-white dark:bg-background-dark p-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-3">
+             <button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+                <a href="./painel.html"> <span class="material-symbols-outlined text-text-light dark:text-text-dark text-2xl">arrow_back</span></a>
+             </button>
+            <h1 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Clientes</h1>
+            <div class="w-10"></div>
+        </div>
+        <div class="relative">
+             <label for="search-client-input" class="sr-only">Buscar Cliente</label>
+             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                 <span class="material-symbols-outlined text-gray-400">search</span>
+             </div>
+             <input type="search" id="search-client-input" placeholder="Buscar por nome..." class="form-input block w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-zinc-800 dark:text-white text-sm focus:ring-primary focus:border-primary"/>
+        </div>
+    </div>
+
+    <div id="client-list-container" class="flex-1 p-4 space-y-3">
+        <div id="client-list-placeholder" class="text-center py-10 text-gray-500 dark:text-gray-400">Carregando clientes...</div>
+        </div>
+
+    <div class="fixed bottom-6 right-6 z-30">
+        <button id="add-client-button" class="flex items-center justify-center rounded-full bg-primary text-white shadow-lg h-14 w-14 hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" aria-label="Adicionar Novo Cliente">
+            <span class="material-symbols-outlined text-3xl">add</span>
+        </button>
+    </div>
+</div>
+
+<div id="add-client-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-lg w-full max-w-lg mx-auto max-h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between p-4 border-b dark:border-zinc-700 flex-shrink-0">
+            <h2 class="text-lg font-bold text-secondary dark:text-white">Cadastrar Novo Cliente</h2>
+            <button class="close-modal-btn flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors" aria-label="Fechar">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+        <div class="overflow-y-auto p-4 flex-1">
+            <form id="add-client-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-nome">Nome Completo *</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="add-nome" name="nome" type="text" placeholder="Nome do cliente" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-telefone">Telefone *</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="add-telefone" name="telefone" type="tel" placeholder="(00) 00000-0000" required/>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-cpf">CPF</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="add-cpf" name="cpf" type="text" placeholder="000.000.000-00"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-email">E-mail</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="add-email" name="email" type="email" placeholder="cliente@email.com"/>
+                </div>
+                <div class="pt-2 border-t dark:border-zinc-700">
+                    <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">Endereço (Opcional)</h3>
+                     <div class="grid grid-cols-3 gap-4">
+                        <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-cep">CEP</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="add-cep" name="cep" type="text"/>
+                        </div>
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-logradouro">Logradouro</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="add-logradouro" name="logradouro" type="text"/>
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-3 gap-4 mt-3">
+                         <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-numero">Número</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="add-numero" name="numero" type="text"/>
+                        </div>
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-bairro">Bairro</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="add-bairro" name="bairro" type="text"/>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 mt-3">
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-cidade">Cidade</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="add-cidade" name="cidade" type="text"/>
+                        </div>
+                        <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="add-estado">UF</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="add-estado" name="estado" type="text" maxlength="2"/>
+                        </div>
+                    </div>
+                </div>
+                <div id="add-client-message" class="text-sm font-medium hidden mt-4"></div>
+            </form>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t dark:border-zinc-700 flex-shrink-0">
+            <button type="button" class="close-modal-btn py-2 px-4 border border-zinc-300 dark:border-zinc-600 rounded-lg text-sm font-semibold text-secondary dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">Cancelar</button>
+            <button form="add-client-form" type="submit" class="py-2 px-4 bg-primary rounded-lg text-sm font-bold text-white hover:bg-primary/90 transition-colors disabled:opacity-50 inline-flex items-center justify-center">Salvar Cliente</button>
+        </div>
+    </div>
+</div>
+
+<div id="edit-client-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-lg w-full max-w-lg mx-auto max-h-[90vh] flex flex-col">
+        <div class="flex items-center justify-between p-4 border-b dark:border-zinc-700 flex-shrink-0">
+            <h2 class="text-lg font-bold text-secondary dark:text-white">Editar Cliente</h2>
+            <button class="close-modal-btn flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors" aria-label="Fechar">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+        <div class="overflow-y-auto p-4 flex-1">
+            <form id="edit-client-form" class="space-y-4">
+                <input type="hidden" id="edit-client-id" name="id">
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-nome">Nome Completo *</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="edit-nome" name="nome" type="text" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-telefone">Telefone *</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="edit-telefone" name="telefone" type="tel" required/>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-cpf">CPF</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="edit-cpf" name="cpf" type="text"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-email">E-mail</label>
+                    <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm" id="edit-email" name="email" type="email"/>
+                </div>
+                <div class="pt-2 border-t dark:border-zinc-700">
+                    <h3 class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 mb-2">Endereço (Opcional)</h3>
+                     <div class="grid grid-cols-3 gap-4">
+                        <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-cep">CEP</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-cep" name="cep" type="text"/>
+                        </div>
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-logradouro">Logradouro</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-logradouro" name="logradouro" type="text"/>
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-3 gap-4 mt-3">
+                         <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-numero">Número</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-numero" name="numero" type="text"/>
+                        </div>
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-bairro">Bairro</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-bairro" name="bairro" type="text"/>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 mt-3">
+                        <div class="col-span-2">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-cidade">Cidade</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-cidade" name="cidade" type="text"/>
+                        </div>
+                        <div class="col-span-1">
+                             <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1" for="edit-estado">UF</label>
+                             <input class="form-input block w-full rounded-md border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm text-xs p-2" id="edit-estado" name="estado" type="text" maxlength="2"/>
+                        </div>
+                    </div>
+                </div>
+                <div id="edit-client-message" class="text-sm font-medium hidden mt-4"></div>
+            </form>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t dark:border-zinc-700 flex-shrink-0">
+            <button type="button" class="close-modal-btn py-2 px-4 border border-zinc-300 dark:border-zinc-600 rounded-lg text-sm font-semibold text-secondary dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">Cancelar</button>
+            <button form="edit-client-form" type="submit" class="py-2 px-4 bg-primary rounded-lg text-sm font-bold text-white hover:bg-primary/90 transition-colors disabled:opacity-50 inline-flex items-center justify-center">Salvar Alterações</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="js/auth.js"></script>
+<script src="js/clientes.js"></script>
+
+</body>
+</html>

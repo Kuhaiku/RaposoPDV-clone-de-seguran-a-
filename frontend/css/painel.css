@@ -1,0 +1,39 @@
+.metricas .card p {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.grafico-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.chart-controls {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: visible;
+}
+
+.btn-toggle {
+    padding: 8px 15px;
+    border: none;
+    background-color: #f4f6f9;
+    color: #555;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.btn-toggle:not(:last-child) {
+    border-right: 1px solid #ddd;
+}
+
+.btn-toggle.active {
+    background-color: var(--secondary-color);
+    color: white;
+}
