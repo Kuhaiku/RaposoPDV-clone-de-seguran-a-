@@ -52,7 +52,7 @@ exports.criar = async (req, res) => {
             
             // --- LÓGICA DE PASTA DATADA (PERÍODO) ---
             const subfolderData = getHojeFormatado();
-            const folderPath = `raposopdv/${empresaRows[0].slug}/produtos/${subfolderData}`;
+            const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos`;
             console.log(`[CRIAR] Uploading para pasta: ${folderPath}`);
 
             const uploadPromises = files.map(file => {
@@ -187,7 +187,7 @@ exports.atualizar = async (req, res) => {
             
             // --- LÓGICA DE PASTA DATADA (PERÍODO) ---
             const subfolderData = getHojeFormatado();
-            const folderPath = `raposopdv/${empresaRows[0].slug}/produtos/${subfolderData}`;
+            const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos`;
             console.log(`[ATUALIZAR] Uploading para pasta: ${folderPath}`);
 
             const uploadPromises = files.map(file => {
@@ -230,9 +230,8 @@ exports.atualizar = async (req, res) => {
 };
 
 // -----------------------------------------------------------------------------
-// AÇÃO 2: INATIVAR PRODUTO (Mover para pasta "inativos")
+// AÇÃO 2: INATIVAR PRODUTO (Mover para pasta "inativos" DENTRO DO PERÍODO)
 // -----------------------------------------------------------------------------
-// A rota 'DELETE /produtos/:id' (excluir) agora significa INATIVAR e MOVER
 exports.excluir = async (req, res) => {
     console.log('--- CHAMANDO: exports.excluir (INATIVAR) ---');
     const { id } = req.params;
@@ -250,8 +249,10 @@ exports.excluir = async (req, res) => {
         }
         const slug = empresaRows[0].slug;
         
-        // ***** A PASTA CORRETA: "inativos" *****
-        const pastaDestino = `raposopdv/${slug}/inativos`;
+        // ***** CORREÇÃO: PASTA DE INATIVOS DENTRO DO PERÍODO ATUAL *****
+        const subfolderData = getHojeFormatado(); // Pega o período atual (data)
+        const pastaDestino = `raposopdv/${slug}/${subfolderData}/inativos`;
+        // ***** FIM DA CORREÇÃO *****
 
         // 2. Buscar fotos do produto
         const [fotos] = await connection.query('SELECT id, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
@@ -259,7 +260,7 @@ exports.excluir = async (req, res) => {
 
         // 3. Mover fotos no Cloudinary
         for (const foto of fotos) {
-            // Só move se não estiver na pasta 'inativos'
+            // Só move se não estiver já em uma pasta 'inativos'
             if (foto.public_id && !foto.public_id.includes('/inativos/')) { 
                 try {
                     const basePublicId = foto.public_id.split('/').pop();
@@ -305,12 +306,13 @@ exports.excluir = async (req, res) => {
 exports.listarInativos = async (req, res) => {
     const empresa_id = req.empresaId;
     try {
-        // Busca onde status = 'inativo'
+        // Busca onde status = 'inativo' E TAMBÉM 'excluido'
+        // A tela de "Inativos" agora mostra os dois, para permitir a exclusão permanente
         const [rows] = await pool.query(`
-            SELECT p.id, p.nome, p.preco, p.estoque, p.codigo,
+            SELECT p.id, p.nome, p.preco, p.estoque, p.codigo, p.status,
                    COALESCE((SELECT url FROM produto_fotos WHERE produto_id = p.id ORDER BY id LIMIT 1), p.foto_url) AS foto_url
             FROM produtos p
-            WHERE p.status = 'inativo' AND p.empresa_id = ?
+            WHERE (p.status = 'inativo' OR p.status = 'excluido') AND p.empresa_id = ?
             ORDER BY p.nome ASC
         `, [empresa_id]);
         res.status(200).json(rows);
@@ -342,7 +344,7 @@ exports.reativar = async (req, res) => {
         
         // Define a pasta de destino com a data ATUAL (período de reativação)
         const subfolderData = getHojeFormatado();
-        const pastaDestino = `raposopdv/${slug}/produtos/${subfolderData}`;
+        const pastaDestino = `raposopdv/${slug}/${subfolderData}/produtos`;
 
         // 2. Buscar fotos do produto (que estão na pasta 'inativos')
         const [fotos] = await connection.query('SELECT id, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
@@ -422,11 +424,11 @@ exports.excluirEmMassa = async (req, res) => {
          if (publicIdsParaDeletarCloudinary.length > 0) {
              console.log("[EXCLUIR PERM] Deletando fotos do Cloudinary:", publicIdsParaDeletarCloudinary);
              try {
+                 // DELETA PERMANENTEMENTE DO CLOUDINARY
                  await cloudinary.api.delete_resources(publicIdsParaDeletarCloudinary);
                  console.log("[EXCLUIR PERM] Fotos do Cloudinary deletadas.");
              } catch (cloudinaryError) {
                  console.error("[EXCLUIR PERM] Erro ao deletar fotos do Cloudinary:", cloudinaryError);
-                 // Não paramos aqui, pois o principal é marcar no DB
              }
          }
 
@@ -435,6 +437,8 @@ exports.excluirEmMassa = async (req, res) => {
         await connection.query(`DELETE FROM produto_fotos WHERE produto_id IN (?)`, [numericIds]);
 
         // 4. MARCA OS PRODUTOS COMO 'excluido' no DB
+        // A VERIFICAÇÃO DE VENDAS FOI REMOVIDA, CONFORME SEU PEDIDO DE "marcar como excluido"
+        // Ocultar da UI é responsabilidade do frontend (que agora filtra por status='ativo')
         console.log("[EXCLUIR PERM] Marcando produtos como 'excluido' no DB...");
         const [result] = await connection.query(
             `UPDATE produtos SET status = 'excluido' WHERE id IN (?) AND empresa_id = ?`, 
@@ -447,10 +451,6 @@ exports.excluirEmMassa = async (req, res) => {
             excluidos: result.affectedRows
         });
     } catch (error) {
-        // Se der erro de Venda (FK_venda_itens_produtos), o usuário NÃO DEVE ter visto o botão "Excluir".
-        // O frontend só deve mostrar "Excluir" para produtos em 'inativo'.
-        // Mas se a regra de negócio for que NÃO PODE excluir (nem marcar) se tiver venda, 
-        // a verificação de 'venda_itens' precisa voltar aqui.
         if (connection) await connection.rollback();
         console.error(`Error during batch exclusion for Empresa ID ${empresa_id}:`, error);
         res.status(500).json({ message: error.message || 'Erro ao excluir produtos.' });
@@ -481,6 +481,7 @@ exports.inativarEmMassa = async (req, res) => {
         
         console.log(`[INATIVAR MASSA] Inativando ${numericIds.length} produtos (fotos NÃO serão movidas).`);
         const placeholders = numericIds.map(() => '?').join(',');
+        // Seta o status para 'inativo'
         const query = `UPDATE produtos SET status = 'inativo' WHERE id IN (${placeholders}) AND empresa_id = ?`;
 
         const [result] = await pool.query(query, [...numericIds, empresa_id]);
