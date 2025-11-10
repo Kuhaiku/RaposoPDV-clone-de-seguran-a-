@@ -25,8 +25,9 @@ exports.obterCatalogoPorSlug = async (req, res) => {
 
         // 2ª CORREÇÃO AQUI: Trocado 'ativo = 1' por 'status = "ativo"'
         const [categoriasRows] = await pool.query(
-            'SELECT DISTINCT categoria FROM produtos WHERE empresa_id = ? AND status = 'ativo' AND categoria IS NOT NULL AND categoria != "" ORDER BY categoria ASC',
+            'SELECT DISTINCT categoria FROM produtos WHERE empresa_id = ? AND status = "ativo" AND categoria IS NOT NULL AND categoria != "" ORDER BY categoria ASC',
             [empresa.id]
+            
         );
         const categorias = categoriasRows.map(row => row.categoria);
 
