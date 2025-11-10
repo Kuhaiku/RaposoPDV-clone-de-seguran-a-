@@ -232,7 +232,7 @@ exports.atualizar = async (req, res) => {
 };
 
 // -----------------------------------------------------------------------------
-// AÇÃO 2: INATIVAR PRODUTO (Mover para pasta "inativos" DENTRO DO PERÍODO)
+// AÇÃO 2: INATIVAR PRODUTO (Mover para pasta "inativos/{id}" DENTRO DO PERÍODO)
 // -----------------------------------------------------------------------------
 exports.excluir = async (req, res) => {
     console.log('--- CHAMANDO: exports.excluir (INATIVAR) ---');
@@ -251,10 +251,11 @@ exports.excluir = async (req, res) => {
         }
         const slug = empresaRows[0].slug;
         
-        // ***** CORREÇÃO: PASTA DE INATIVOS DENTRO DO PERÍODO ATUAL *****
+        // ***** MODIFICAÇÃO CHAVE 1 *****
         const subfolderData = getHojeFormatado(); // Pega o período atual (data)
-        const pastaDestino = `raposopdv/${slug}/${subfolderData}/inativos`;
-        // ***** FIM DA CORREÇÃO *****
+        // O destino base agora inclui o ID do produto
+        const pastaDestino = `raposopdv/${slug}/${subfolderData}/inativos/${id}`;
+        // ***** FIM DA MODIFICAÇÃO *****
 
         // 2. Buscar fotos do produto
         const [fotos] = await connection.query('SELECT id, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
@@ -280,7 +281,12 @@ exports.excluir = async (req, res) => {
                         [result.secure_url, result.public_id, foto.id]
                     );
                 } catch (renameError) {
+                    // ***** MODIFICAÇÃO CHAVE 2 *****
+                    // Se der erro ao mover a foto, joga o erro para fora do loop
+                    // Isso vai parar a execução e acionar o rollback da transação
                     console.error(`[INATIVAR] Erro ao mover foto ${foto.public_id}: ${renameError.message}`);
+                    throw renameError; // <-- Joga o erro para o catch principal
+                    // ***** FIM DA MODIFICAÇÃO *****
                 }
             } else {
                 console.log(`[INATIVAR] Ignorando foto ${foto.public_id} (já está em 'inativos' ou não tem public_id).`);
@@ -327,7 +333,7 @@ exports.listarInativos = async (req, res) => {
 };
 
 // -----------------------------------------------------------------------------
-// AÇÃO 3: REATIVAR PRODUTO (Mover de "inativos" para pasta de período E ID do produto)
+// AÇÃO 3: REATIVAR PRODUTO (Mover de "inativos/{id}" para pasta de período E ID do produto)
 // -----------------------------------------------------------------------------
 exports.reativar = async (req, res) => {
     console.log('--- CHAMANDO: exports.reativar ---');
