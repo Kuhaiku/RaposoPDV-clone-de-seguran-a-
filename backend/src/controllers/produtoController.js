@@ -281,12 +281,12 @@ exports.excluir = async (req, res) => {
                         [result.secure_url, result.public_id, foto.id]
                     );
                 } catch (renameError) {
-                    // ***** MODIFICAÇÃO CHAVE 2 *****
+                    // ***** ESTA É A CORREÇÃO CRÍTICA *****
                     // Se der erro ao mover a foto, joga o erro para fora do loop
                     // Isso vai parar a execução e acionar o rollback da transação
                     console.error(`[INATIVAR] Erro ao mover foto ${foto.public_id}: ${renameError.message}`);
                     throw renameError; // <-- Joga o erro para o catch principal
-                    // ***** FIM DA MODIFICAÇÃO *****
+                    // ***** FIM DA CORREÇÃO *****
                 }
             } else {
                 console.log(`[INATIVAR] Ignorando foto ${foto.public_id} (já está em 'inativos' ou não tem public_id).`);
