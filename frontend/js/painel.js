@@ -8,39 +8,62 @@ if (typeof checkAuth !== 'function' || typeof fetchWithAuth !== 'function') {
 document.addEventListener('DOMContentLoaded', () => {
     // --- Elementos do DOM ---
     const logoutBtn = document.getElementById('logout-btn');
-    const faturamentoPeriodoEl = document.getElementById('faturamento-periodo'); // ID da métrica principal (CORRIGIDO)
+    const faturamentoPeriodoEl = document.getElementById('faturamento-periodo'); // ID da métrica principal
     const darkModeToggle = document.getElementById('dark-mode-toggle'); // Botão dark mode (opcional)
+
+    // NOVO: Seleciona o link do catálogo
+    const catalogoLink = document.getElementById('catalogo-link');
 
     // --- Funções ---
 
-    // Função para carregar as métricas (agora só faturamento do período)
-    async function carregarMetricas() {
-        // Mostra um estado de carregamento inicial
+    // Função para carregar as métricas E os dados da empresa (slug)
+    async function carregarDadosPainel() { 
         if (faturamentoPeriodoEl) faturamentoPeriodoEl.textContent = 'Carregando...';
+        if (catalogoLink) {
+            catalogoLink.style.pointerEvents = 'none'; // Desabilita o clique enquanto carrega
+            catalogoLink.title = 'Carregando...';
+        }
 
         try {
-            const response = await fetchWithAuth('/api/dashboard/metricas'); // Endpoint da API
-            if (!response.ok) {
-                 const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido ao buscar métricas.' }));
-                 throw new Error(errorData.message || `Erro ${response.status}`);
-            }
-            const data = await response.json();
+            // Faz as duas chamadas em paralelo
+            const [metricasRes, empresaRes] = await Promise.all([
+                fetchWithAuth('/api/dashboard/metricas'), // Endpoint das métricas
+                fetchWithAuth('/api/empresas/meus-dados') // Endpoint para buscar o slug
+            ]);
 
-            // Atualiza apenas a métrica existente
+            // Processa as métricas
+            if (!metricasRes.ok) {
+                 const errorData = await metricasRes.json().catch(() => ({ message: 'Erro desconhecido ao buscar métricas.' }));
+                 throw new Error(errorData.message || `Erro ${metricasRes.status}`);
+            }
+            const metricasData = await metricasRes.json();
+
             if (faturamentoPeriodoEl) {
-                // Usa 'faturamentoPeriodo' que é o nome da métrica no backend (CORRIGIDO)
-                const faturamentoNumerico = parseFloat(data.faturamentoPeriodo) || 0; 
-                // Formata como moeda brasileira
+                const faturamentoNumerico = parseFloat(metricasData.faturamentoPeriodo) || 0; 
                 faturamentoPeriodoEl.textContent = faturamentoNumerico.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             }
 
-            // A lógica de Novos Clientes e Gráficos foi REMOVIDA
+            // NOVO: Processa os dados da empresa (slug)
+            if (empresaRes.ok && catalogoLink) {
+                const empresaData = await empresaRes.json();
+                if (empresaData.slug) {
+                    catalogoLink.href = `catalogo.html?empresa=${empresaData.slug}`;
+                    catalogoLink.style.pointerEvents = 'auto'; // Reabilita o clique
+                    catalogoLink.title = 'Acessar catálogo público';
+                } else {
+                    console.warn('Slug da empresa não encontrado. O link do catálogo não funcionará.');
+                    catalogoLink.href = '#'; // Deixa como '#' se o slug não vier
+                    catalogoLink.title = 'Catálogo indisponível';
+                }
+            } else if (catalogoLink) {
+                console.warn('Não foi possível carregar os dados da empresa (slug).');
+                catalogoLink.title = 'Catálogo indisponível';
+            }
 
         } catch (error) {
-            console.error('Erro ao buscar métricas:', error);
-            if (faturamentoPeriodoEl) faturamentoPeriodoEl.textContent = 'Erro'; // Indica erro na UI
-            // Poderia mostrar um alert ou mensagem mais detalhada
-            // alert(`Não foi possível carregar as métricas: ${error.message}`);
+            console.error('Erro ao buscar dados do painel:', error);
+            if (faturamentoPeriodoEl) faturamentoPeriodoEl.textContent = 'Erro'; 
+            if (catalogoLink) catalogoLink.title = 'Erro ao carregar';
         }
     }
 
@@ -71,6 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Inicialização ---
-    carregarMetricas(); // Carrega as métricas ao carregar a página
+    carregarDadosPainel(); // Carrega os dados ao carregar a página
 
 }); // Fim do DOMContentLoaded
