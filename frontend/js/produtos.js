@@ -197,8 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const inativos = await inativosRes.json();
 
             todosProdutos = [
-                ...ativos.map(p => ({ ...p, ativo: true })),
-                ...inativos.map(p => ({ ...p, ativo: false }))
+                ...ativos.map(p => ({ ...p, ativo: true, status: 'ativo' })), // Adiciona status 'ativo'
+                ...inativos.map(p => ({ ...p, ativo: false })) // 'status' já vem da API (inativo ou excluido)
             ];
             todosProdutos.sort((a, b) => a.nome.localeCompare(b.nome));
 
@@ -218,10 +218,24 @@ document.addEventListener('DOMContentLoaded', () => {
         productListPlaceholder.classList.add('hidden');
 
         const produtosFiltrados = todosProdutos.filter(p => {
-            const correspondeStatus = (filtroAtual === 'ativos' && p.ativo) || (filtroAtual === 'inativos' && !p.ativo);
+            // Lógica de status modificada
+            let correspondeStatus = false;
+            if (filtroAtual === 'ativos') {
+                // Produtos ativos são os que têm 'ativo: true'.
+                correspondeStatus = p.ativo === true;
+            } else if (filtroAtual === 'inativos') {
+                // --- ESTA É A MUDANÇA ---
+                // Produtos inativos são os que têm 'ativo: false'
+                // E, crucialmente, seu status (que vem da API de inativos)
+                // NÃO é 'excluido'.
+                correspondeStatus = (p.ativo === false && p.status !== 'excluido');
+            }
+
+            // Lógica de busca permanece a mesma
             const correspondeBusca = termoBusca === '' ||
                                      p.nome.toLowerCase().includes(termoBusca) ||
                                      (p.codigo && String(p.codigo).toLowerCase().includes(termoBusca)); // Garante que código é string
+            
             return correspondeStatus && correspondeBusca;
         });
 
