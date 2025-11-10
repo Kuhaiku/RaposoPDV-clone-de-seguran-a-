@@ -1,4 +1,4 @@
-// ./backend/src/controllers/produtoController.js
+// kuhaiku/raposopdv-clone-de-seguran-a-/RaposoPDV-clone-de-seguran-a--ecc43fce32c508b3c04deaa885b72392025744b2/backend/src/controllers/produtoController.js
 const pool = require('../config/database');
 const cloudinary = require('../config/cloudinary');
 const csv = require('csv-parser');
@@ -17,7 +17,7 @@ function getHojeFormatado() {
 }
 
 // -----------------------------------------------------------------------------
-// AÇÃO 1: CRIAR PRODUTO (Upload para pasta de período)
+// AÇÃO 1: CRIAR PRODUTO (Upload para pasta de período E ID do produto)
 // -----------------------------------------------------------------------------
 exports.criar = async (req, res) => {
     console.log('--- CHAMANDO: exports.criar ---');
@@ -52,8 +52,8 @@ exports.criar = async (req, res) => {
             
             // --- LÓGICA DE PASTA DATADA (PERÍODO) ---
             const subfolderData = getHojeFormatado();
-            // Caminho corrigido: slug / data / produtos
-            const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos`;
+            // Caminho corrigido: slug / data / produtos / ID_DO_PRODUTO
+            const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos/${produtoId}`;
             console.log(`[CRIAR] Uploading para pasta: ${folderPath}`);
 
             const uploadPromises = files.map(file => {
@@ -144,7 +144,7 @@ exports.obterPorId = async (req, res) => {
 // Atualizar um produto existente
 exports.atualizar = async (req, res) => {
     console.log('--- CHAMANDO: exports.atualizar ---');
-    const { id } = req.params;
+    const { id } = req.params; // ID do produto
     const empresa_id = req.empresaId;
     const { nome, descricao, preco, estoque, categoria, codigo, fotosParaRemover } = req.body;
     const codigoFinal = codigo || '0';
@@ -178,7 +178,7 @@ exports.atualizar = async (req, res) => {
             }
         }
 
-        // 2. Lógica para ADICIONAR novas fotos (para pasta de período)
+        // 2. Lógica para ADICIONAR novas fotos (para pasta de período E ID do produto)
         if (files.length > 0) {
             console.log(`[ATUALIZAR] Uploading ${files.length} new images...`);
             const [empresaRows] = await connection.query('SELECT slug FROM empresas WHERE id = ?', [empresa_id]);
@@ -188,7 +188,8 @@ exports.atualizar = async (req, res) => {
             
             // --- LÓGICA DE PASTA DATADA (PERÍODO) ---
             const subfolderData = getHojeFormatado();
-            const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos`;
+            // Caminho corrigido: slug / data / produtos / ID_DO_PRODUTO
+            const folderPath = `raposopdv/${empresaRows[0].slug}/${subfolderData}/produtos/${id}`;
             console.log(`[ATUALIZAR] Uploading para pasta: ${folderPath}`);
 
             const uploadPromises = files.map(file => {
@@ -264,10 +265,13 @@ exports.excluir = async (req, res) => {
             // Só move se não estiver já em uma pasta 'inativos'
             if (foto.public_id && !foto.public_id.includes('/inativos/')) { 
                 try {
+                    // Pega SÓ o nome do arquivo (ex: abc.jpg)
                     const basePublicId = foto.public_id.split('/').pop();
+                    // O novo ID será a pasta destino + nome do arquivo
                     const newPublicId = `${pastaDestino}/${basePublicId}`;
                     
                     console.log(`[INATIVAR] MOVENDO ${foto.public_id} para ${newPublicId}`);
+                    // Renomeia (move) o arquivo
                     const result = await cloudinary.uploader.rename(foto.public_id, newPublicId);
                     
                     // 4. Atualizar DB com nova URL e public_id
@@ -323,11 +327,11 @@ exports.listarInativos = async (req, res) => {
 };
 
 // -----------------------------------------------------------------------------
-// AÇÃO 3: REATIVAR PRODUTO (Mover de "inativos" para pasta de período)
+// AÇÃO 3: REATIVAR PRODUTO (Mover de "inativos" para pasta de período E ID do produto)
 // -----------------------------------------------------------------------------
 exports.reativar = async (req, res) => {
     console.log('--- CHAMANDO: exports.reativar ---');
-    const { id } = req.params;
+    const { id } = req.params; // ID do produto
     const empresa_id = req.empresaId;
     let connection;
 
@@ -342,9 +346,9 @@ exports.reativar = async (req, res) => {
         }
         const slug = empresaRows[0].slug;
         
-        // Define a pasta de destino com a data ATUAL (período de reativação)
+        // Define a pasta de destino com a data ATUAL (período de reativação) E ID
         const subfolderData = getHojeFormatado();
-        const pastaDestino = `raposopdv/${slug}/${subfolderData}/produtos`;
+        const pastaDestino = `raposopdv/${slug}/${subfolderData}/produtos/${id}`;
 
         // 2. Buscar fotos do produto (que estão na pasta 'inativos')
         const [fotos] = await connection.query('SELECT id, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
