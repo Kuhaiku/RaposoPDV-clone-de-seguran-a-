@@ -48,7 +48,9 @@ exports.criar = async (req, res) => {
             // NOVO: Verifica se o estoque chegou a zero e inativa o produto
             const [estoqueAtual] = await connection.query('SELECT estoque FROM produtos WHERE id = ?', [item.produto_id]);
             if (estoqueAtual[0].estoque === 0) {
-                await connection.query('UPDATE produtos SET ativo = 0 WHERE id = ?', [item.produto_id]);
+                // ***** CORREÇÃO AQUI *****
+                // Altera a coluna 'status' para 'inativo' ao invés de 'ativo' para 0
+                await connection.query('UPDATE produtos SET status = ? WHERE id = ?', ['inativo', item.produto_id]);
             }
         }
 
@@ -169,11 +171,11 @@ exports.cancelar = async (req, res) => {
 
         // 2. Reverte o estoque e REATIVA o produto
         for (const item of itens) {
-            // ***** MODIFICAÇÃO AQUI *****
-            // Atualiza o estoque E define 'ativo = 1'
+            // ***** CORREÇÃO AQUI TAMBÉM *****
+            // Atualiza o estoque E define 'status = "ativo"'
             await connection.query(
-                'UPDATE produtos SET estoque = estoque + ?, ativo = 1 WHERE id = ? AND empresa_id = ?', 
-                [item.quantidade, item.produto_id, empresa_id]
+                'UPDATE produtos SET estoque = estoque + ?, status = ? WHERE id = ? AND empresa_id = ?', 
+                [item.quantidade, 'ativo', item.produto_id, empresa_id]
             );
             // ***** FIM DA MODIFICAÇÃO *****
         }
