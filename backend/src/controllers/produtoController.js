@@ -4,9 +4,9 @@ const cloudinary = require('../config/cloudinary');
 const csv = require('csv-parser');
 const { Readable } = require('stream');
 
-// --- MODIFICAÇÃO 1: Helper para data (DD-MM-YY) ---
 /**
  * Helper para formatar a data no formato DD-MM-YY
+ * (Esta é a função que cria as pastas de período)
  */
 function getHojeFormatado() {
   const today = new Date();
@@ -15,28 +15,17 @@ function getHojeFormatado() {
   const ano = String(today.getFullYear()).slice(-2);
   return `${dia}-${mes}-${ano}`; // Formato DD-MM-YY
 }
-// --- FIM DA MODIFICAÇÃO ---
 
 // Criar um novo produto
 exports.criar = async (req, res) => {
-    // <<<--- ADICIONADO LOGGING --->>>
-    console.log('--- Received request to create product ---');
-    console.log('req.body:', req.body); // Mostra os campos de texto recebidos
-    console.log('req.files:', req.files); // Mostra os arquivos recebidos
-    // <<<--- FIM LOGGING --->>>
-
+    console.log('--- CHAMANDO: exports.criar ---');
     const empresa_id = req.empresaId;
     const { nome, descricao, preco, estoque, categoria, codigo } = req.body;
     const codigoFinal = codigo || '0';
     const files = req.files || [];
     let connection;
 
-    // Validação de campos obrigatórios
     if (!nome || !preco || !estoque) {
-        // <<<--- ADICIONADO LOGGING ANTES DO ERRO --->>>
-        console.error('Validation failed: Missing required fields (nome, preco, or estoque).');
-        console.error('Received data:', { nome, preco, estoque });
-        // <<<--- FIM LOGGING --->>>
         return res.status(400).json({ message: 'Nome, preço e estoque são obrigatórios.' });
     }
 
@@ -57,10 +46,11 @@ exports.criar = async (req, res) => {
                 throw new Error('Diretório da empresa não encontrado.');
             }
             
-            // --- LÓGICA DE PASTA DATADA (JÁ IMPLEMENTADA) ---
+            // --- MODIFICAÇÃO: Adiciona subpasta de data ---
             const subfolderData = getHojeFormatado();
             const folderPath = `raposopdv/${empresaRows[0].slug}/produtos/${subfolderData}`;
-            // --- FIM DA LÓGICA ---
+            console.log(`[CRIAR] Uploading para pasta: ${folderPath}`);
+            // --- FIM DA MODIFICAÇÃO ---
 
             const uploadPromises = files.map(file => {
                 return new Promise((resolve, reject) => {
@@ -87,8 +77,7 @@ exports.criar = async (req, res) => {
         res.status(201).json({ message: 'Produto criado com sucesso!', produtoId: produtoId });
     } catch (error) {
         if (connection) await connection.rollback();
-        console.error('Error during product creation:', error); // Log detalhado do erro
-        // Envia a mensagem de erro específica, se houver, ou uma genérica
+        console.error('Error during product creation:', error); 
         res.status(500).json({ message: error.message || 'Erro no servidor ao criar produto.' });
     } finally {
         if (connection) connection.release();
@@ -135,11 +124,9 @@ exports.obterPorId = async (req, res) => {
             return res.status(404).json({ message: 'Produto não encontrado.' });
         }
 
-        // CORREÇÃO: Busca mais detalhes das fotos
         const [fotosRows] = await pool.query('SELECT id, url, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
-
         let fotos = fotosRows;
-        // Se não houver fotos na tabela produto_fotos, mas houver na coluna antiga, usa a antiga
+        
         if (fotos.length === 0 && rows[0].foto_url) {
             fotos.push({ id: null, url: rows[0].foto_url, public_id: rows[0].foto_public_id });
         }
@@ -147,7 +134,7 @@ exports.obterPorId = async (req, res) => {
         const produto = { ...rows[0], fotos: fotos };
         res.status(200).json(produto);
     } catch (error) {
-         console.error("Erro ao obter produto por ID:", error); // Log do erro
+         console.error("Erro ao obter produto por ID:", error);
         res.status(500).json({ message: error.message || 'Erro ao obter produto.' });
     }
 };
@@ -155,6 +142,7 @@ exports.obterPorId = async (req, res) => {
 
 // Atualizar um produto existente
 exports.atualizar = async (req, res) => {
+    console.log('--- CHAMANDO: exports.atualizar ---');
     const { id } = req.params;
     const empresa_id = req.empresaId;
     const { nome, descricao, preco, estoque, categoria, codigo, fotosParaRemover } = req.body;
@@ -162,14 +150,11 @@ exports.atualizar = async (req, res) => {
     const files = req.files || [];
     let connection;
 
-    console.log('--- Received request to update product ---');
     console.log('req.body:', req.body);
     console.log('req.files:', req.files);
     console.log('fotosParaRemover (raw):', fotosParaRemover);
 
     if (!nome || preco === undefined || estoque === undefined) {
-         console.error('Validation failed: Missing required fields for update (nome, preco, or estoque).');
-         console.error('Received data:', { nome, preco, estoque });
          return res.status(400).json({ message: 'Nome, preço e estoque são obrigatórios para atualizar.' });
     }
 
@@ -178,53 +163,47 @@ exports.atualizar = async (req, res) => {
         await connection.beginTransaction();
 
         // 1. Lógica para REMOVER fotos existentes (Exclusão permanente do Cloudinary)
+        // Esta é a ação de clicar no 'X' em uma foto no modal de Edição.
         if (fotosParaRemover) {
              let fotosARemoverArray = [];
              try {
                 fotosARemoverArray = JSON.parse(fotosParaRemover);
-                console.log('Parsed fotosParaRemover:', fotosARemoverArray);
              } catch (parseError) {
                  console.error("Erro ao parsear 'fotosParaRemover':", parseError);
-                 console.warn("Continuando sem remover fotos devido a erro no parse.");
              }
 
             if (Array.isArray(fotosARemoverArray) && fotosARemoverArray.length > 0) {
-                 const publicIdsParaDeletar = fotosARemoverArray
-                     .map(f => f.public_id)
-                     .filter(pid => pid); 
+                 const publicIdsParaDeletar = fotosARemoverArray.map(f => f.public_id).filter(pid => pid); 
 
                  if (publicIdsParaDeletar.length > 0) {
-                     console.log('Attempting to delete from Cloudinary:', publicIdsParaDeletar);
+                     console.log('[ATUALIZAR] Deletando fotos do Cloudinary:', publicIdsParaDeletar);
+                     // DELETA do Cloudinary
                      await cloudinary.api.delete_resources(publicIdsParaDeletar);
-                 } else {
-                      console.log("Nenhum public_id válido encontrado em fotosParaRemover para deletar do Cloudinary.");
                  }
 
-                 const idsParaDeletarDB = fotosARemoverArray
-                    .map(f => f.id)
-                    .filter(id => id !== null && id !== undefined); 
+                 const idsParaDeletarDB = fotosARemoverArray.map(f => f.id).filter(id => id !== null && id !== undefined); 
 
                  if (idsParaDeletarDB.length > 0) {
-                      console.log('Attempting to delete from DB (produto_fotos):', idsParaDeletarDB);
+                     console.log('[ATUALIZAR] Deletando fotos do DB (produto_fotos):', idsParaDeletarDB);
+                     // DELETA do banco de dados
                      await connection.query('DELETE FROM produto_fotos WHERE id IN (?) AND produto_id = ?', [idsParaDeletarDB, id]);
-                 } else {
-                      console.log("Nenhum ID válido encontrado em fotosParaRemover para deletar do banco de dados.");
                  }
             }
         }
 
         // 2. Lógica para ADICIONAR novas fotos
         if (files.length > 0) {
-            console.log(`Uploading ${files.length} new images...`);
+            console.log(`[ATUALIZAR] Uploading ${files.length} new images...`);
             const [empresaRows] = await connection.query('SELECT slug FROM empresas WHERE id = ?', [empresa_id]);
             if (empresaRows.length === 0 || !empresaRows[0].slug) {
                 throw new Error('Diretório da empresa não encontrado para upload.');
             }
             
-            // --- LÓGICA DE PASTA DATADA (JÁ IMPLEMENTADA) ---
+            // --- MODIFICAÇÃO: Adiciona subpasta de data ---
             const subfolderData = getHojeFormatado();
             const folderPath = `raposopdv/${empresaRows[0].slug}/produtos/${subfolderData}`;
-            // --- FIM DA LÓGICA ---
+            console.log(`[ATUALIZAR] Uploading para pasta: ${folderPath}`);
+            // --- FIM DA MODIFICAÇÃO ---
 
             const uploadPromises = files.map(file => {
                 return new Promise((resolve, reject) => {
@@ -244,13 +223,12 @@ exports.atualizar = async (req, res) => {
             const results = await Promise.all(uploadPromises);
             const fotosParaSalvar = results.map(result => [id, result.secure_url, result.public_id]);
             if(fotosParaSalvar.length > 0) {
-                console.log('Inserting new photos into DB:', fotosParaSalvar);
                 await connection.query('INSERT INTO produto_fotos (produto_id, url, public_id) VALUES ?', [fotosParaSalvar]);
             }
         }
 
         // 3. Atualiza os outros dados do produto
-        console.log(`Updating product text fields for ID ${id}...`);
+        console.log(`[ATUALIZAR] Atualizando dados do produto ID ${id}...`);
         const [updateResult] = await connection.query(
             'UPDATE produtos SET nome = ?, descricao = ?, preco = ?, estoque = ?, categoria = ?, codigo = ? WHERE id = ? AND empresa_id = ?',
             [nome, descricao, preco, estoque, categoria, codigoFinal, id, empresa_id]
@@ -262,7 +240,6 @@ exports.atualizar = async (req, res) => {
         }
 
         await connection.commit();
-        console.log(`Product ID ${id} updated successfully.`);
         res.status(200).json({ message: 'Produto atualizado com sucesso!' });
     } catch (error) {
         if (connection) await connection.rollback();
@@ -273,13 +250,13 @@ exports.atualizar = async (req, res) => {
     }
 };
 
-// --- MODIFICAÇÃO 2: Inativar produto E MOVER FOTOS ---
+// --- MODIFICAÇÃO CHAVE 1: Inativar produto E MOVER FOTOS ---
 // A rota 'DELETE /produtos/:id' (excluir) agora significa INATIVAR e MOVER
 exports.excluir = async (req, res) => {
+    console.log('--- CHAMANDO: exports.excluir (INATIVAR) ---');
     const { id } = req.params;
     const empresa_id = req.empresaId;
     let connection;
-    console.log(`--- Request to INACTIVATE product ID: ${id} for Empresa ID: ${empresa_id} ---`);
 
     try {
         connection = await pool.getConnection();
@@ -295,16 +272,16 @@ exports.excluir = async (req, res) => {
 
         // 2. Buscar fotos do produto
         const [fotos] = await connection.query('SELECT id, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
+        console.log(`[INATIVAR] Encontradas ${fotos.length} fotos para o produto ${id}.`);
 
         // 3. Mover fotos no Cloudinary
         for (const foto of fotos) {
             if (foto.public_id && !foto.public_id.includes('/apagados/')) { // Só move se não estiver lá
                 try {
-                    // Extrai o nome base do arquivo (ex: 'imagem_abc123')
                     const basePublicId = foto.public_id.split('/').pop();
                     const newPublicId = `${pastaDestino}/${basePublicId}`;
                     
-                    console.log(`Moving ${foto.public_id} to ${newPublicId}`);
+                    console.log(`[INATIVAR] MOVENDO ${foto.public_id} para ${newPublicId}`);
                     // O 'rename' move o arquivo
                     const result = await cloudinary.uploader.rename(foto.public_id, newPublicId);
                     
@@ -314,20 +291,21 @@ exports.excluir = async (req, res) => {
                         [result.secure_url, result.public_id, foto.id]
                     );
                 } catch (renameError) {
-                    console.error(`Erro ao mover foto ${foto.public_id}: ${renameError.message}`);
-                    // Continua mesmo se uma foto falhar, mas loga o erro
+                    console.error(`[INATIVAR] Erro ao mover foto ${foto.public_id}: ${renameError.message}`);
                 }
+            } else {
+                console.log(`[INATIVAR] Ignorando foto ${foto.public_id} (já está em apagados ou não tem public_id).`);
             }
         }
 
         // 5. Inativar o produto no DB
+        console.log(`[INATIVAR] Inativando produto ${id} no banco de dados.`);
         const [result] = await connection.query('UPDATE produtos SET ativo = 0 WHERE id = ? AND empresa_id = ?', [id, empresa_id]);
         if (result.affectedRows === 0) {
             throw new Error('Produto não encontrado ou não pertence a esta empresa.');
         }
 
         await connection.commit();
-        console.log(`Product ID ${id} inactivated and photos moved.`);
         res.status(200).json({ message: 'Produto inativado e fotos movidas para "apagados" com sucesso.' });
     } catch (error) {
         if (connection) await connection.rollback();
@@ -337,13 +315,11 @@ exports.excluir = async (req, res) => {
         if (connection) connection.release();
     }
 };
-// --- FIM DA MODIFICAÇÃO ---
 
 
 // Listar produtos inativos
 exports.listarInativos = async (req, res) => {
     const empresa_id = req.empresaId;
-    console.log(`--- Received request to list inactive products for Empresa ID: ${empresa_id} ---`);
     try {
         const [rows] = await pool.query(`
             SELECT p.id, p.nome, p.preco, p.estoque, p.codigo,
@@ -352,7 +328,6 @@ exports.listarInativos = async (req, res) => {
             WHERE p.ativo = 0 AND p.empresa_id = ?
             ORDER BY p.nome ASC
         `, [empresa_id]);
-        console.log(`Found ${rows.length} inactive products.`);
         res.status(200).json(rows);
     } catch (error) {
         console.error(`Error listing inactive products for Empresa ID ${empresa_id}:`, error);
@@ -360,12 +335,12 @@ exports.listarInativos = async (req, res) => {
     }
 };
 
-// --- MODIFICAÇÃO 3: Reativar produto E MOVER FOTOS DE VOLTA ---
+// --- MODIFICAÇÃO CHAVE 2: Reativar produto E MOVER FOTOS DE VOLTA ---
 exports.reativar = async (req, res) => {
+    console.log('--- CHAMANDO: exports.reativar ---');
     const { id } = req.params;
     const empresa_id = req.empresaId;
     let connection;
-    console.log(`--- Request to REACTIVATE product ID: ${id} for Empresa ID: ${empresa_id} ---`);
 
     try {
         connection = await pool.getConnection();
@@ -377,12 +352,14 @@ exports.reativar = async (req, res) => {
             throw new Error('Empresa não encontrada.');
         }
         const slug = empresaRows[0].slug;
+        
         // Define a pasta de destino com a data ATUAL
         const subfolderData = getHojeFormatado();
         const pastaDestino = `raposopdv/${slug}/produtos/${subfolderData}`;
 
         // 2. Buscar fotos do produto (que estão na pasta 'apagados')
         const [fotos] = await connection.query('SELECT id, public_id FROM produto_fotos WHERE produto_id = ?', [id]);
+        console.log(`[REATIVAR] Encontradas ${fotos.length} fotos para o produto ${id}.`);
 
         // 3. Mover fotos no Cloudinary
         for (const foto of fotos) {
@@ -392,7 +369,7 @@ exports.reativar = async (req, res) => {
                     const basePublicId = foto.public_id.split('/').pop();
                     const newPublicId = `${pastaDestino}/${basePublicId}`;
                     
-                    console.log(`Moving ${foto.public_id} to ${newPublicId}`);
+                    console.log(`[REATIVAR] MOVENDO ${foto.public_id} para ${newPublicId}`);
                     const result = await cloudinary.uploader.rename(foto.public_id, newPublicId);
                     
                     // 4. Atualizar DB com nova URL e public_id
@@ -401,19 +378,21 @@ exports.reativar = async (req, res) => {
                         [result.secure_url, result.public_id, foto.id]
                     );
                 } catch (renameError) {
-                    console.error(`Erro ao mover foto ${foto.public_id}: ${renameError.message}`);
+                    console.error(`[REATIVAR] Erro ao mover foto ${foto.public_id}: ${renameError.message}`);
                 }
+            } else {
+                 console.log(`[REATIVAR] Ignorando foto ${foto.public_id} (não está em apagados ou não tem public_id).`);
             }
         }
 
         // 5. Reativar o produto no DB
+        console.log(`[REATIVAR] Ativando produto ${id} no banco de dados.`);
         const [result] = await connection.query('UPDATE produtos SET ativo = 1 WHERE id = ? AND empresa_id = ?', [id, empresa_id]);
         if (result.affectedRows === 0) {
             throw new Error('Produto inativo não encontrado ou não pertence a esta empresa.');
         }
         
         await connection.commit();
-        console.log(`Product ID ${id} reactivated and photos moved back.`);
         res.status(200).json({ message: 'Produto reativado e fotos restauradas com sucesso.' });
     } catch (error) {
         if (connection) await connection.rollback();
@@ -423,42 +402,35 @@ exports.reativar = async (req, res) => {
         if (connection) connection.release();
     }
 };
-// --- FIM DA MODIFICAÇÃO ---
 
 
 // Inativar produtos em massa
 exports.inativarEmMassa = async (req, res) => {
+    console.log('--- CHAMANDO: exports.inativarEmMassa ---');
     const empresa_id = req.empresaId;
     const { ids } = req.body;
-     console.log(`--- Received request to batch inactivate products for Empresa ID: ${empresa_id} ---`);
-     console.log('Product IDs:', ids);
-
 
     if (!Array.isArray(ids) || ids.length === 0) {
-         console.warn("Batch inactivation failed: No product IDs provided.");
         return res.status(400).json({ message: 'Nenhum ID de produto fornecido.' });
     }
 
     try {
-        // Validação extra: Garante que todos os IDs são números
         const numericIds = ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
         if (numericIds.length !== ids.length) {
-             console.warn("Batch inactivation failed: Some provided IDs were not valid numbers.");
              return res.status(400).json({ message: 'Um ou mais IDs fornecidos são inválidos.' });
         }
         if (numericIds.length === 0) {
-             console.warn("Batch inactivation failed: No valid numeric IDs provided after filtering.");
              return res.status(400).json({ message: 'Nenhum ID de produto válido fornecido.' });
         }
         
         // NOTA: Esta função de inativação em massa NÃO moverá as fotos para 'apagados'
         // para evitar sobrecarga de API. Apenas a inativação individual (exports.excluir) faz isso.
+        console.log(`[INATIVAR MASSA] Inativando ${numericIds.length} produtos (fotos NÃO serão movidas).`);
 
         const placeholders = numericIds.map(() => '?').join(',');
         const query = `UPDATE produtos SET ativo = 0 WHERE id IN (${placeholders}) AND empresa_id = ?`;
 
         const [result] = await pool.query(query, [...numericIds, empresa_id]);
-        console.log(`${result.affectedRows} product(s) inactivated successfully.`);
 
         res.status(200).json({
             message: `${result.affectedRows} produto(s) inativado(s) com sucesso. (Obs: Fotos não movidas em massa)`,
@@ -471,72 +443,58 @@ exports.inativarEmMassa = async (req, res) => {
 };
 
 // Excluir produtos em massa permanentemente
+// ESTA É A ÚNICA FUNÇÃO QUE DELETA FOTOS DO CLOUDINARY PERMANENTEMENTE
 exports.excluirEmMassa = async (req, res) => {
+    console.log('--- CHAMANDO: exports.excluirEmMassa (DELEÇÃO PERMANENTE) ---');
     const empresa_id = req.empresaId;
     const { ids } = req.body;
-    console.log(`--- Received request to batch delete products for Empresa ID: ${empresa_id} ---`);
-    console.log('Product IDs:', ids);
 
     if (!Array.isArray(ids) || ids.length === 0) {
-         console.warn("Batch deletion failed: No product IDs provided.");
         return res.status(400).json({ message: 'Nenhum ID de produto fornecido.' });
     }
 
-     // Validação extra: Garante que todos os IDs são números
     const numericIds = ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
     if (numericIds.length !== ids.length) {
-         console.warn("Batch deletion failed: Some provided IDs were not valid numbers.");
          return res.status(400).json({ message: 'Um ou mais IDs fornecidos são inválidos.' });
     }
      if (numericIds.length === 0) {
-         console.warn("Batch deletion failed: No valid numeric IDs provided after filtering.");
          return res.status(400).json({ message: 'Nenhum ID de produto válido fornecido.' });
     }
-
 
     let connection;
     try {
         connection = await pool.getConnection();
         await connection.beginTransaction();
 
-         console.log("Checking for existing sales related to product IDs:", numericIds);
-        // Verifica se algum produto está associado a vendas
+        console.log("[EXCLUIR MASSA] Verificando vendas existentes...");
         const [vendaItens] = await connection.query(`SELECT DISTINCT produto_id FROM venda_itens WHERE produto_id IN (?) LIMIT 1`, [numericIds]);
         if (vendaItens.length > 0) {
             await connection.rollback();
             const relatedProductId = vendaItens[0].produto_id;
-            console.warn(`Batch deletion failed: Product ID ${relatedProductId} is associated with existing sales.`);
             return res.status(400).json({ message: `Não é possível excluir o produto ID ${relatedProductId} (e talvez outros) pois está associado a vendas existentes. Considere inativar.` });
         }
 
-        // Busca public_ids das fotos associadas aos produtos a serem excluídos
-        console.log("Fetching photo public_ids for products to be deleted:", numericIds);
+        console.log("[EXCLUIR MASSA] Buscando fotos para deletar...");
         const [fotosParaDeletar] = await connection.query(`SELECT public_id FROM produto_fotos WHERE produto_id IN (?)`, [numericIds]);
-        const publicIdsParaDeletarCloudinary = fotosParaDeletar.map(f => f.public_id).filter(pid => pid); // Filtra nulos/vazios
+        const publicIdsParaDeletarCloudinary = fotosParaDeletar.map(f => f.public_id).filter(pid => pid); 
 
-        // Deleta as fotos da tabela produto_fotos
-         console.log("Deleting photo records from DB for product IDs:", numericIds);
+        console.log("[EXCLUIR MASSA] Deletando fotos do DB...");
         await connection.query(`DELETE FROM produto_fotos WHERE produto_id IN (?)`, [numericIds]);
 
-        // Deleta os produtos da tabela produtos
-         console.log("Deleting product records from DB for product IDs:", numericIds);
+        console.log("[EXCLUIR MASSA] Deletando produtos do DB...");
         const [result] = await connection.query(`DELETE FROM produtos WHERE id IN (?) AND empresa_id = ?`, [numericIds, empresa_id]);
 
-         // Se a exclusão no banco foi bem-sucedida, deleta do Cloudinary
          if (publicIdsParaDeletarCloudinary.length > 0) {
-             console.log("Deleting photos from Cloudinary:", publicIdsParaDeletarCloudinary);
+             console.log("[EXCLUIR MASSA] Deletando fotos do Cloudinary:", publicIdsParaDeletarCloudinary);
              try {
                  await cloudinary.api.delete_resources(publicIdsParaDeletarCloudinary);
-                 console.log("Cloudinary photos deleted successfully.");
+                 console.log("[EXCLUIR MASSA] Fotos do Cloudinary deletadas.");
              } catch (cloudinaryError) {
-                 // Loga o erro do Cloudinary mas não impede a resposta de sucesso
-                 console.error("Error deleting photos from Cloudinary (products already deleted from DB):", cloudinaryError);
+                 console.error("[EXCLUIR MASSA] Erro ao deletar fotos do Cloudinary (DB já modificado):", cloudinaryError);
              }
          }
 
-
         await connection.commit();
-        console.log(`${result.affectedRows} product(s) deleted permanently.`);
         res.status(200).json({
             message: `${result.affectedRows} produto(s) excluído(s) permanentemente.`,
             excluidos: result.affectedRows
@@ -552,11 +510,10 @@ exports.excluirEmMassa = async (req, res) => {
 
 // Importar produtos via CSV
 exports.importarCSV = async (req, res) => {
+    console.log('--- CHAMANDO: exports.importarCSV ---');
     const empresa_id = req.empresaId;
-     console.log(`--- Received request to import CSV for Empresa ID: ${empresa_id} ---`);
 
     if (!req.file) {
-         console.warn("CSV import failed: No file uploaded.");
         return res.status(400).json({ message: 'Nenhum arquivo CSV enviado.' });
     }
 
@@ -600,7 +557,6 @@ exports.importarCSV = async (req, res) => {
             }
 
             if (produtos.length === 0) {
-                 console.warn("CSV import failed: No valid product data found after parsing.");
                 return res.status(400).json({ message: 'O arquivo CSV está vazio ou não contém dados de produto válidos nas linhas.' });
             }
 
@@ -608,7 +564,7 @@ exports.importarCSV = async (req, res) => {
              try {
                  connection = await pool.getConnection(); 
                  await connection.beginTransaction();
-                 console.log(`Starting DB insertion for ${produtos.length} products...`);
+                 console.log(`[CSV] Starting DB insertion for ${produtos.length} products...`);
                  let insertedCount = 0;
                  let skippedCount = 0;
 
@@ -625,7 +581,7 @@ exports.importarCSV = async (req, res) => {
                      const foto_public_id = String(produto.foto_public_id || '').trim() || null;
 
                      if (!nome || isNaN(preco) || isNaN(estoque) || preco < 0 || estoque < 0) {
-                          console.warn(`Skipping invalid product data during DB insertion:`, { nome, preco, estoque, raw: produto });
+                          console.warn(`[CSV] Skipping invalid product data during DB insertion:`, { nome, preco, estoque, raw: produto });
                           skippedCount++;
                           continue; 
                      }
@@ -645,13 +601,13 @@ exports.importarCSV = async (req, res) => {
                              );
                          }
                      } catch (dbError) {
-                          console.error(`Error inserting product "${nome}" into DB:`, dbError.message);
+                          console.error(`[CSV] Error inserting product "${nome}" into DB:`, dbError.message);
                           skippedCount++;
                      }
                  }
 
                  await connection.commit();
-                 console.log(`CSV import finished. Inserted: ${insertedCount}, Skipped: ${skippedCount}`);
+                 console.log(`[CSV] Import finished. Inserted: ${insertedCount}, Skipped: ${skippedCount}`);
                  let message = `${insertedCount} produto(s) importado(s) com sucesso!`;
                  if (skippedCount > 0) {
                      message += ` ${skippedCount} linha(s) foram ignoradas devido a dados inválidos ou erros.`;
@@ -659,7 +615,7 @@ exports.importarCSV = async (req, res) => {
                  res.status(201).json({ message: message });
             } catch (error) {
                  if (connection) await connection.rollback(); 
-                 console.error('Error during CSV DB operation:', error);
+                 console.error('[CSV] Error during DB operation:', error);
                  res.status(500).json({ message: error.message || 'Erro ao salvar produtos do CSV no banco de dados.' });
             } finally {
                  if (connection) connection.release(); 
