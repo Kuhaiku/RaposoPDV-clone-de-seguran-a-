@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h2>Crie sua Nova Senha</h2>
+            <p>Insira o código de 8 dígitos que enviamos para seu e-mail.</p>
+            <form id="reset-senha-form">
+                <div class="input-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" required readonly style="background-color: #eee;">
+                </div>
+                <div class="input-group">
+                    <label for="token">Código de 8 dígitos</label>
+                    <input type="text" id="token" required maxlength="8">
+                </div>
+                <div class="input-group">
+                    <label for="novaSenha">Nova Senha (Mín. 6 caracteres)</label>
+                    <input type="password" id="novaSenha" required minlength="6">
+                </div>
+                <button type="submit" class="btn">Salvar Nova Senha</button>
+            </form>
+            <div id="message" class="error-message"></div>
+            <a href="login.html" style="display: block; margin-top: 20px;">Voltar para o Login</a>
+        </div>
+    </div>
+    <script src="js/reset-senha.js"></script>
+</body>
+</html>

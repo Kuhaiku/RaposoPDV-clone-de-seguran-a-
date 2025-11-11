@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h2>Recuperar Senha</h2>
+            <p>Digite seu e-mail para receber um código de 8 dígitos.</p>
+            <form id="esqueci-senha-form">
+                <div class="input-group">
+                    <label for="email">Seu E-mail</label>
+                    <input type="email" id="email" placeholder="seuemail@provedor.com" required>
+                </div>
+                <button type="submit" class="btn">Enviar E-mail</button>
+            </form>
+            <div id="message" class="error-message"></div>
+            <a href="login.html" style="display: block; margin-top: 20px;">Voltar para o Login</a>
+        </div>
+    </div>
+    <script src="js/esqueci-senha.js"></script>
+</body>
+</html>
