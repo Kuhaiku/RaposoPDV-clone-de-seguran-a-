@@ -1,6 +1,7 @@
 const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const transporter = require('../config/mailer'); // IMPORTA O NODEMAILER
 
 // FUNÇÃO UTILITÁRIA: Converte o objeto Date do JavaScript para o formato MySQL DATETIME 'YYYY-MM-DD HH:MM:SS'
 function toSqlDatetime(date) {
@@ -12,58 +13,30 @@ function toSqlDatetime(date) {
 
 /**
  * Registra um novo funcionário (usuário) para uma empresa.
- * Esta é uma rota protegida, acessível apenas por uma empresa autenticada.
+ * Esta rota foi desativada em favor do registro público unificado.
  */
-exports.registrar = async (req, res) => {
-    // Pega o ID da empresa logada, que foi adicionado à requisição pelo middleware 'authEmpresaMiddleware'
-    const empresa_id = req.empresaId;
-    const { nome, email, senha } = req.body;
-
-    if (!nome || !email || !senha) {
-        return res.status(400).json({ message: 'Nome, email e senha do funcionário são obrigatórios.' });
-    }
-
-    try {
-        // Criptografa a senha do funcionário antes de salvar
-        const senhaHash = await bcrypt.hash(senha, 10);
-
-        // Insere o novo funcionário, associando-o à empresa correta.
-        // NOVO: Define a data de início do período atual como a data de registro
-        const [result] = await pool.query(
-            'INSERT INTO usuarios (empresa_id, nome, email, senha_hash, data_inicio_periodo_atual) VALUES (?, ?, ?, ?, NOW())',
-            [empresa_id, nome, email, senhaHash]
-        );
-
-        res.status(201).json({ message: 'Funcionário registrado com sucesso!', usuarioId: result.insertId });
-    } catch (error) {
-        // Trata o erro caso o e-mail do funcionário já exista para esta empresa
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ message: 'Este e-mail já está em uso por outro funcionário nesta empresa.' });
-        }
-        console.error(error);
-        res.status(500).json({ message: 'Erro ao registrar funcionário.' });
-    }
-};
+// exports.registrar = async (req, res) => { ... };
 
 /**
- * Autentica um funcionário (usuário).
- * Requer o e-mail da empresa, o e-mail do funcionário e a senha.
+ * Autentica um funcionário (usuário) - AGORA O LOGIN PRINCIPAL.
+ * Requer apenas e-mail do funcionário e senha.
  */
 exports.login = async (req, res) => {
-    const { email_empresa, email_funcionario, senha } = req.body;
+    // Altera os campos esperados
+    const { email, senha } = req.body;
 
-    if (!email_empresa || !email_funcionario || !senha) {
-        return res.status(400).json({ message: 'Email da empresa, email do funcionário e senha são obrigatórios.' });
+    if (!email || !senha) {
+        return res.status(400).json({ message: 'E-mail e senha são obrigatórios.' });
     }
 
     try {
-        // Faz uma busca cruzada (JOIN) para garantir que o funcionário pertence à empresa informada
+        // Modifica a query para buscar o usuário e o status da empresa
         const [rows] = await pool.query(
-            `SELECT u.*, u.empresa_id 
+            `SELECT u.*, e.ativo AS empresa_ativa 
              FROM usuarios u 
              JOIN empresas e ON u.empresa_id = e.id 
-             WHERE e.email_contato = ? AND u.email = ?`,
-            [email_empresa, email_funcionario]
+             WHERE u.email = ?`,
+            [email] // Busca apenas pelo email do usuário
         );
         const usuario = rows[0];
 
@@ -78,6 +51,11 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Credenciais inválidas.' });
         }
 
+        // NOVO: Verifica se a empresa está ativa (aprovada pelo superadmin)
+        if (!usuario.empresa_ativa) {
+            return res.status(403).json({ message: 'Sua conta está inativa ou aguardando aprovação do administrador.' });
+        }
+
         // Gera o token de autenticação para o funcionário
         // Importante: o token agora contém tanto o ID do usuário quanto o ID da empresa
         const token = jwt.sign(
@@ -86,68 +64,30 @@ exports.login = async (req, res) => {
             { expiresIn: '8h' }
         );
 
-        res.status(200).json({ message: 'Login do funcionário bem-sucedido!', token: token });
+        res.status(200).json({ message: 'Login bem-sucedido!', token: token });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Erro no servidor durante o login do funcionário.' });
+        res.status(500).json({ message: 'Erro no servidor durante o login.' });
     }
 };
+
 
 /**
  * Lista todos os funcionários de uma empresa específica.
- * Rota protegida, acessível apenas pela empresa-mãe.
+ * Rota desativada.
  */
-exports.listarTodos = async (req, res) => {
-    // Pega o ID da empresa logada a partir do token
-    const empresa_id = req.empresaId;
-
-    try {
-        const [usuarios] = await pool.query(
-            'SELECT id, nome, email FROM usuarios WHERE empresa_id = ? ORDER BY nome ASC',
-            [empresa_id]
-        );
-        res.status(200).json(usuarios);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Erro ao listar funcionários.' });
-    }
-};
+// exports.listarTodos = async (req, res) => { ... };
 
 /**
  * Redefine a senha de um funcionário específico.
- * Apenas a empresa-mãe pode fazer isso.
+ * Rota desativada.
  */
-exports.redefinirSenha = async (req, res) => {
-    const { id } = req.params; // ID do funcionário a ser alterado
-    const { novaSenha } = req.body;
-    const empresa_id = req.empresaId; // ID da empresa que está logada
-
-    if (!novaSenha || novaSenha.length < 6) {
-        return res.status(400).json({ message: 'A nova senha é obrigatória e deve ter no mínimo 6 caracteres.' });
-    }
-
-    try {
-        const senhaHash = await bcrypt.hash(novaSenha, 10);
-        // Garante que a empresa só pode alterar senhas de seus próprios funcionários
-        const [result] = await pool.query(
-            'UPDATE usuarios SET senha_hash = ? WHERE id = ? AND empresa_id = ?',
-            [senhaHash, id, empresa_id]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Funcionário não encontrado ou não pertence a esta empresa.' });
-        }
-
-        res.status(200).json({ message: 'Senha do funcionário atualizada com sucesso.' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Erro no servidor ao redefinir a senha do funcionário.' });
-    }
-};
+// exports.redefinirSenha = async (req, res) => { ... };
 
 /**
  * Permite que o próprio funcionário logado altere sua senha.
+ * ATUALIZADO: Agora atualiza a senha na tabela 'empresas' também.
  */
 exports.redefinirSenhaPropria = async (req, res) => {
     const { senhaAtual, novaSenha } = req.body;
@@ -160,34 +100,54 @@ exports.redefinirSenhaPropria = async (req, res) => {
         return res.status(400).json({ message: 'A nova senha deve ter no mínimo 6 caracteres.' });
     }
 
+    let connection;
     try {
-        const [rows] = await pool.query('SELECT senha_hash FROM usuarios WHERE id = ?', [usuario_id]);
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        // Busca o hash da senha, email e empresa_id do usuário
+        const [rows] = await connection.query('SELECT senha_hash, email, empresa_id FROM usuarios WHERE id = ?', [usuario_id]);
         const usuario = rows[0];
 
         if (!usuario) {
+             await connection.rollback();
             return res.status(404).json({ message: 'Usuário não encontrado.' });
         }
 
         const senhaValida = await bcrypt.compare(senhaAtual, usuario.senha_hash);
         if (!senhaValida) {
+             await connection.rollback();
             return res.status(401).json({ message: 'A senha atual está incorreta.' });
         }
 
         const novaSenhaHash = await bcrypt.hash(novaSenha, 10);
-        await pool.query(
+        
+        // 1. Atualiza a senha na tabela USUARIOS
+        await connection.query(
             'UPDATE usuarios SET senha_hash = ? WHERE id = ?',
             [novaSenhaHash, usuario_id]
         );
 
+        // 2. Atualiza a senha na tabela EMPRESAS (pois o login é unificado)
+        await connection.query(
+            'UPDATE empresas SET senha_hash = ? WHERE email_contato = ? AND id = ?',
+            [novaSenhaHash, usuario.email, usuario.empresa_id]
+        );
+
+        await connection.commit();
         res.status(200).json({ message: 'Sua senha foi alterada com sucesso.' });
     } catch (error) {
+        if (connection) await connection.rollback();
         console.error(error);
         res.status(500).json({ message: 'Erro no servidor ao alterar sua senha.' });
+    } finally {
+        if (connection) connection.release();
     }
 };
 
 /**
  * Busca os dados e métricas para o perfil do vendedor logado.
+ * (Inalterado)
  */
 exports.obterDadosPerfil = async (req, res) => {
     const usuario_id = req.usuarioId;
@@ -300,6 +260,7 @@ exports.obterDadosPerfil = async (req, res) => {
 
 /**
  * NOVA FUNÇÃO: Fecha o período de vendas atual do vendedor logado.
+ * (Inalterado)
  */
 exports.fecharPeriodo = async (req, res) => {
     const usuario_id = req.usuarioId;
@@ -377,6 +338,7 @@ exports.fecharPeriodo = async (req, res) => {
 
 /**
  * NOVA FUNÇÃO: Lista o histórico de períodos fechados para o vendedor.
+ * (Inalterado)
  */
 exports.listarHistoricoPeriodos = async (req, res) => {
     const usuario_id = req.usuarioId;
@@ -384,12 +346,131 @@ exports.listarHistoricoPeriodos = async (req, res) => {
     try {
         // Filtra por usuario_id E empresa_id
         const [periodos] = await pool.query(
-            'SELECT id, data_inicio, data_fim, total_faturado, numero_vendas, comissao_vendedor FROM periodos_fechados WHERE usuario_id = ? AND empresa_id = ? ORDER BY data_fim DESC',
+            'SELECT * FROM periodos_fechados WHERE usuario_id = ? AND empresa_id = ? ORDER BY data_fim DESC',
             [usuario_id, empresa_id]
         );
         res.status(200).json(periodos);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Erro ao buscar histórico de períodos.' });
+    }
+};
+
+
+// --- NOVAS FUNÇÕES DE REDEFINIÇÃO DE SENHA (NODEMAILER) ---
+
+/**
+ * Envia um e-mail de redefinição de senha.
+ */
+exports.solicitarRedefinicaoSenha = async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'O e-mail é obrigatório.' });
+    }
+
+    try {
+        const [rows] = await pool.query('SELECT id, nome, empresa_id FROM usuarios WHERE email = ?', [email]);
+        const usuario = rows[0];
+
+        if (!usuario) {
+            // Não informe ao usuário se o e-mail existe ou não por segurança
+            return res.status(200).json({ message: 'Se um usuário com este e-mail existir, um link de redefinição será enviado.' });
+        }
+
+        // Gera um token curto de 15 minutos
+        const resetToken = jwt.sign(
+            { usuarioId: usuario.id, empresaId: usuario.empresa_id },
+            process.env.JWT_SECRET, // Use a mesma chave secreta
+            { expiresIn: '15m' }
+        );
+
+        // URL do seu frontend (AJUSTE SE NECESSÁRIO)
+        const resetUrl = `https://w-app-raposo-pdvclone.velmc0.easypanel.host/reset-senha.html?token=${resetToken}`;
+
+        const mailOptions = {
+            from: `"Raposo PDV" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Redefinição de Senha - Raposo PDV',
+            html: `
+                <p>Olá, ${usuario.nome}!</p>
+                <p>Recebemos uma solicitação para redefinir sua senha.</p>
+                <p>Clique no link abaixo para criar uma nova senha. Este link expira em 15 minutos:</p>
+                <p><a href="${resetUrl}" style="background-color: #3498db; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Redefinir Minha Senha</a></p>
+                <p>Se você não solicitou isso, por favor, ignore este e-mail.</p>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        
+        res.status(200).json({ message: 'Se um usuário com este e-mail existir, um link de redefinição será enviado.' });
+
+    } catch (error) {
+        console.error('Erro ao solicitar redefinição de senha:', error);
+        res.status(500).json({ message: 'Erro interno do servidor.' });
+    }
+};
+
+/**
+ * Redefine a senha usando um token JWT.
+ */
+exports.redefinirSenhaComToken = async (req, res) => {
+    const { token, novaSenha } = req.body;
+
+    if (!token || !novaSenha) {
+        return res.status(400).json({ message: 'Token e nova senha são obrigatórios.' });
+    }
+    if (novaSenha.length < 6) {
+        return res.status(400).json({ message: 'A nova senha deve ter no mínimo 6 caracteres.' });
+    }
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+        return res.status(401).json({ message: 'Token inválido ou expirado.' });
+    }
+
+    const { usuarioId, empresaId } = decoded;
+    if (!usuarioId || !empresaId) {
+        return res.status(401).json({ message: 'Token malformado.' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const senhaHash = await bcrypt.hash(novaSenha, 10);
+
+        // 1. Atualiza USUARIOS
+        const [userResult] = await connection.query(
+            'UPDATE usuarios SET senha_hash = ? WHERE id = ? AND empresa_id = ?',
+            [senhaHash, usuarioId, empresaId]
+        );
+
+        if (userResult.affectedRows === 0) {
+            await connection.rollback();
+            return res.status(404).json({ message: 'Usuário não encontrado.' });
+        }
+
+        // 2. Busca o email do usuário para atualizar a empresa
+        const [userRows] = await connection.query('SELECT email FROM usuarios WHERE id = ?', [usuarioId]);
+        const emailPrincipal = userRows[0].email;
+
+        // 3. Atualiza EMPRESAS (pois o login é unificado)
+        await connection.query(
+            'UPDATE empresas SET senha_hash = ? WHERE email_contato = ? AND id = ?',
+            [senhaHash, emailPrincipal, empresaId]
+        );
+
+        await connection.commit();
+        res.status(200).json({ message: 'Senha redefinida com sucesso!' });
+
+    } catch (error) {
+        if (connection) await connection.rollback();
+        console.error('Erro ao redefinir senha com token:', error);
+        res.status(500).json({ message: 'Erro interno do servidor.' });
+    } finally {
+        if (connection) connection.release();
     }
 };
