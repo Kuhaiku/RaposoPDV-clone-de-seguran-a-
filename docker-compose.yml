@@ -6,8 +6,8 @@ services:
     container_name: raposo_gestao_app
     restart: unless-stopped
     ports:
-      - "3000:3000"
-    # ADICIONE ESTAS DUAS LINHAS ABAIXO
+      - "3000:3001" # <-- CORREÇÃO AQUI
+    # Mapeie a porta 3000 da sua máquina (host) para a 3001 do container (onde o node está)
     environment:
       - TZ=America/Sao_Paulo
     env_file:
