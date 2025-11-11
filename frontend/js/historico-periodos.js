@@ -85,10 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">Itens Vendidos:</p>
                                 <p class="text-gray-900 dark:text-gray-100 text-sm font-bold">${periodo.itens_vendidos}</p>
                             </div>
-                            <div class="flex justify-between items-center pt-3 border-t dark:border-gray-700">
-                                <p class="text-gray-900 dark:text-gray-100 text-base font-bold">Comissão Gerada (35%):</p>
-                                <p class="text-success text-base font-bold">${formatarMoeda(periodo.comissao_vendedor)}</p>
-                            </div>
+                            
                         </div>
                     </div>
                 `;
