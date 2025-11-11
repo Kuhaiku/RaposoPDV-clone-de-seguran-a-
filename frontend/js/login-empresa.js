@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = '';
 
 const loginForm = document.getElementById('login-empresa-form');
 const errorMessageDiv = document.getElementById('error-message');

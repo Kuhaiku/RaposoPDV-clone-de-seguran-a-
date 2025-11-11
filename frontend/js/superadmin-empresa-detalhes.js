@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = '';
 
 function checkSuperAdminAuth() {
     const token = localStorage.getItem('superAdminAuthToken');

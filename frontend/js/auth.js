@@ -1,5 +1,5 @@
 // Define a URL base da API. Deixe em branco se o frontend e o backend estiverem no mesmo servidor/domínio.
-const API_URL = 'http://localhost:3000';
+const API_URL = '';
 
 /**
  * Verifica se o token de autenticação do funcionário existe no localStorage.
