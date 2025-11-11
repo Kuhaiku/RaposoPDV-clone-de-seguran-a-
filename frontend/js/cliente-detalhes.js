@@ -321,10 +321,15 @@ document.addEventListener('DOMContentLoaded', () => {
          submitButton.innerHTML = `<div class="spinner mr-2 inline-block"></div> Salvando...`;
          const formData = new FormData(editClientDetailsForm);
          const clienteAtualizado = Object.fromEntries(formData.entries());
-         if (!clienteAtualizado.nome || !clienteAtualizado.telefone) {
-             showModalMessage(editClientDetailsMessage, "Nome e Telefone são obrigatórios.", true);
+
+         // ***** MODIFICAÇÃO AQUI *****
+         // Apenas o nome é obrigatório
+         if (!clienteAtualizado.nome) {
+             showModalMessage(editClientDetailsMessage, "O campo Nome é obrigatório.", true);
              submitButton.disabled = false; submitButton.textContent = 'Salvar Alterações'; return;
          }
+         // ***** FIM DA MODIFICAÇÃO *****
+
          try {
              const response = await fetchWithAuth(`/api/clientes/${clienteId}`, { method: 'PUT', body: JSON.stringify(clienteAtualizado) });
              const data = await response.json(); if (!response.ok) throw new Error(data.message || 'Erro ao atualizar.');
