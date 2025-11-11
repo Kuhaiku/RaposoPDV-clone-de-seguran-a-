@@ -4,12 +4,28 @@ const pool = require('../config/database');
 exports.criar = async (req, res) => {
     const empresa_id = req.empresaId;
     const { nome, telefone, cpf, email, logradouro, numero, bairro, cidade, estado, cep } = req.body;
+    
+    // Converte campos vazios ou undefined para NULL
+    const cpfFinal = cpf || null;
+    const telefoneFinal = telefone || null;
+    const emailFinal = email || null;
+    const logradouroFinal = logradouro || null;
+    const numeroFinal = numero || null;
+    const bairroFinal = bairro || null;
+    const cidadeFinal = cidade || null;
+    const estadoFinal = estado || null;
+    const cepFinal = cep || null;
+
     if (!nome) return res.status(400).json({ message: 'O campo nome é obrigatório.' });
+    
     try {
-        const [result] = await pool.query('INSERT INTO clientes (empresa_id, nome, telefone, cpf, email, logradouro, numero, bairro, cidade, estado, cep) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [empresa_id, nome, telefone, cpf, email, logradouro, numero, bairro, cidade, estado, cep]);
+        const [result] = await pool.query(
+            'INSERT INTO clientes (empresa_id, nome, telefone, cpf, email, logradouro, numero, bairro, cidade, estado, cep) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+            [empresa_id, nome, telefoneFinal, cpfFinal, emailFinal, logradouroFinal, numeroFinal, bairroFinal, cidadeFinal, estadoFinal, cepFinal]
+        );
         res.status(201).json({ message: 'Cliente criado com sucesso!', clienteId: result.insertId });
     } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'Este CPF já está cadastrado nesta empresa.' });
+        // A verificação de ER_DUP_ENTRY para CPF foi removida
         console.error(error);
         res.status(500).json({ message: 'Erro ao criar cliente.' });
     }
@@ -46,12 +62,27 @@ exports.atualizar = async (req, res) => {
     const { id } = req.params;
     const empresa_id = req.empresaId;
     const { nome, telefone, cpf, email, logradouro, numero, bairro, cidade, estado, cep } = req.body;
+
+    // Converte campos vazios ou undefined para NULL
+    const cpfFinal = cpf || null;
+    const telefoneFinal = telefone || null;
+    const emailFinal = email || null;
+    const logradouroFinal = logradouro || null;
+    const numeroFinal = numero || null;
+    const bairroFinal = bairro || null;
+    const cidadeFinal = cidade || null;
+    const estadoFinal = estado || null;
+    const cepFinal = cep || null;
+
     try {
-        const [result] = await pool.query('UPDATE clientes SET nome = ?, telefone = ?, cpf = ?, email = ?, logradouro = ?, numero = ?, bairro = ?, cidade = ?, estado = ?, cep = ? WHERE id = ? AND empresa_id = ?', [nome, telefone, cpf, email, logradouro, numero, bairro, cidade, estado, cep, id, empresa_id]);
+        const [result] = await pool.query(
+            'UPDATE clientes SET nome = ?, telefone = ?, cpf = ?, email = ?, logradouro = ?, numero = ?, bairro = ?, cidade = ?, estado = ?, cep = ? WHERE id = ? AND empresa_id = ?', 
+            [nome, telefoneFinal, cpfFinal, emailFinal, logradouroFinal, numeroFinal, bairroFinal, cidadeFinal, estadoFinal, cepFinal, id, empresa_id]
+        );
         if (result.affectedRows === 0) return res.status(404).json({ message: 'Cliente não encontrado ou não pertence à sua empresa.' });
         res.status(200).json({ message: 'Cliente atualizado com sucesso.' });
     } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'Este CPF já pertence a outro cadastro nesta empresa.' });
+        // A verificação de ER_DUP_ENTRY para CPF foi removida
         console.error(error);
         res.status(500).json({ message: 'Erro ao atualizar cliente.' });
     }
