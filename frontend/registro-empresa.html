@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastre sua Empresa</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/login.css"> </head>
+<body>
+    <div class="login-container">
+        <div class="login-box" style="max-width: 500px;">
+            <h2>Crie sua Conta</h2>
+            <p>Cadastre sua empresa para começar a vender.</p>
+            <form id="registro-empresa-form">
+                <div class="input-group">
+                    <label for="nome_empresa">Nome da Empresa</label>
+                    <input type="text" id="nome_empresa" required>
+                </div>
+                <div class="input-group">
+                    <label for="email_contato">Seu E-mail (Será seu login)</label>
+                    <input type="email" id="email_contato" required>
+                </div>
+                <div class="input-group">
+                    <label for="senha">Sua Senha (Mín. 6 caracteres)</label>
+                    <input type="password" id="senha" required minlength="6">
+                </div>
+                <div class="input-group">
+                    <label for="telefone_comercial">Telefone/WhatsApp</label>
+                    <input type="tel" id="telefone_comercial">
+                </div>
+                
+                <button type="submit" class="btn">Cadastrar Minha Empresa</button>
+            </form>
+            <div id="message" class="error-message"></div>
+            <a href="login.html" style="display: block; margin-top: 20px;">Já tem uma conta? Faça login aqui.</a>
+        </div>
+    </div>
+    <script src="js/registro-empresa.js"></script>
+</body>
+</html>

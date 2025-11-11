@@ -29,8 +29,10 @@ async function fetchWithSuperAdminAuth(endpoint, options = {}) {
 document.addEventListener('DOMContentLoaded', () => {
     checkSuperAdminAuth();
 
-    const addEmpresaForm = document.getElementById('add-empresa-form');
-    const successMessageDiv = document.getElementById('success-message');
+    // FORMULÁRIO DE ADIÇÃO REMOVIDO
+    // const addEmpresaForm = document.getElementById('add-empresa-form');
+    // const successMessageDiv = document.getElementById('success-message');
+    
     const logoutBtn = document.getElementById('logout-superadmin-btn');
     const empresasAtivasBody = document.getElementById('empresas-ativas-body');
 
@@ -82,36 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    addEmpresaForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const novaEmpresa = {
-            nome_empresa: document.getElementById('nome_empresa').value,
-            cnpj: document.getElementById('cnpj').value,
-            telefone_comercial: document.getElementById('telefone_comercial').value,
-            endereco_comercial: document.getElementById('endereco_comercial').value,
-            cidade: document.getElementById('cidade').value,
-            estado: document.getElementById('estado').value,
-            cep: document.getElementById('cep').value,
-            email_contato: document.getElementById('email_contato').value,
-            senha: document.getElementById('senha').value,
-            dia_pagamento_acordado: document.getElementById('dia_pagamento_acordado').value
-        };
-        try {
-            const response = await fetchWithSuperAdminAuth('/api/empresas/registrar', {
-                method: 'POST',
-                body: JSON.stringify(novaEmpresa)
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
-            
-            addEmpresaForm.reset();
-            successMessageDiv.textContent = 'Empresa cadastrada com sucesso!';
-            setTimeout(() => { successMessageDiv.textContent = ''; }, 4000);
-            carregarEmpresasAtivas();
-        } catch (error) {
-            alert(error.message);
-        }
-    });
+    // LISTENER DO FORMULÁRIO DE ADIÇÃO REMOVIDO
+    // addEmpresaForm.addEventListener('submit', ...);
 
     logoutBtn.addEventListener('click', logoutSuperAdmin);
     carregarEmpresasAtivas();

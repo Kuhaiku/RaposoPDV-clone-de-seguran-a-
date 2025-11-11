@@ -7,18 +7,19 @@ const errorMessageDiv = document.getElementById('error-message');
 loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    // Pega os valores dos TRÊS campos
-    const email_empresa = document.getElementById('email_empresa').value;
-    const email_funcionario = document.getElementById('email_funcionario').value;
+    // Pega os valores dos DOIS campos
+    // REMOVIDO: const email_empresa = document.getElementById('email_empresa').value;
+    const email = document.getElementById('email_funcionario').value; // Usaremos este como o email principal
     const senha = document.getElementById('senha').value;
     
     errorMessageDiv.textContent = '';
 
     try {
-        // Envia os três dados para a API
+        // Envia os DOIS dados para a API
         const response = await fetchWithAuth('/api/usuarios/login', {
             method: 'POST',
-            body: JSON.stringify({ email_empresa, email_funcionario, senha }),
+            // Atualiza o corpo da requisição
+            body: JSON.stringify({ email: email, senha: senha }),
         });
 
         const data = await response.json();

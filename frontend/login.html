@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login do Funcionário | Uze Painel</title>
+    <title>Login | Uze Painel</title>
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
     <div class="login-container">
         <div class="login-box">
-            <h2>Acesso ao Painel de Vendas</h2>
-            <p>Faça login com suas credenciais de funcionário</p>
+            <h2>Acesso ao Painel</h2>
+            <p>Faça login com suas credenciais</p>
             <form id="login-form">
                 <div class="input-group">
-                    <label for="email_empresa">Email da Empresa</label>
-                    <input type="email" id="email_empresa" placeholder=" nomeempresa@painel.com" required>
-                </div>
-                <div class="input-group">
-                    <label for="email_funcionario">Seu E-mail de Funcionário</label>
-                    <input type="email" id="email_funcionario" required>
+                    <label for="email_funcionario">Seu E-mail</label>
+                    <input type="email" id="email_funcionario" placeholder="seuemail@provedor.com" required>
                 </div>
                 <div class="input-group">
                     <label for="senha">Senha</label>
@@ -28,8 +24,7 @@
                 <button type="submit" class="btn">Entrar</button>
             </form>
             <div id="error-message" class="error-message"></div>
-            <a href="login-empresa.html" style="display: block; margin-top: 20px;">É administrador? <br>
-                Faça login da empresa aqui.</a>
+            <a href="registro-empresa.html" style="display: block; margin-top: 20px;">Não tem uma conta? Cadastre-se aqui.</a>
         </div>
     </div>
 
