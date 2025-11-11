@@ -1,4 +1,4 @@
-const API_URL = '';
+const API_URL = 'http://localhost:3000';
 
 // Função de Autenticação para a EMPRESA
 function checkEmpresaAuth() {

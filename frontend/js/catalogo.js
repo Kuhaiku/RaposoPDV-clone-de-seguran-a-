@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const API_URL = '';
+    const API_URL = 'http://localhost:3000';
 
     const catalogoGrid = document.getElementById('catalogo-grid');
     const nomeEmpresaHeader = document.getElementById('nome-empresa-header');

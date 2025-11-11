@@ -1,4 +1,4 @@
-const API_URL = '';
+const API_URL = 'http://localhost:3000';
 
 const loginForm = document.getElementById('superadmin-login-form');
 const errorMessageDiv = document.getElementById('error-message');
