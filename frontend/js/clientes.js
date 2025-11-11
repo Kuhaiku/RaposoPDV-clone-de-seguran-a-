@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         clientesVisiveis = todosClientes.filter(cliente => {
             const nomeMatch = cliente.nome.toLowerCase().includes(termoBusca);
+            // MODIFICAÇÃO: Verifica se cliente.telefone existe antes de chamar .toLowerCase()
             const telMatch = cliente.telefone && cliente.telefone.toLowerCase().includes(termoBusca);
             return nomeMatch || telMatch;
         });
@@ -164,12 +165,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(addClientForm);
         const novoCliente = Object.fromEntries(formData.entries());
 
-        if (!novoCliente.nome || !novoCliente.telefone) {
-             showModalMessage(addClientMessage, "Nome e Telefone são obrigatórios.", true);
+        // ***** MODIFICAÇÃO AQUI *****
+        // Apenas o nome é obrigatório
+        if (!novoCliente.nome) {
+             showModalMessage(addClientMessage, "O campo Nome é obrigatório.", true);
              submitButton.disabled = false;
              submitButton.textContent = 'Salvar Cliente';
              return;
          }
+         // ***** FIM DA MODIFICAÇÃO *****
 
         try {
             const response = await fetchWithAuth('/api/clientes', { method: 'POST', body: JSON.stringify(novoCliente) });
